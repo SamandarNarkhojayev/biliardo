@@ -113,7 +113,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           envs: REGISTRY,IMAGE_TAG,REGISTRY_USER,REGISTRY_TOKEN,DEPLOY_PATH
-          script_stop: true
+          # appleboy/ssh-action v1 убрал script_stop — управляем через `set -e` в скрипте.
           script: |
             set -euo pipefail
             cd "$DEPLOY_PATH"
