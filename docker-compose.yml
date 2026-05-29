@@ -1,0 +1,193 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: billiard-postgres
+    environment:
+      POSTGRES_DB: billiard
+      POSTGRES_USER: billiard
+      POSTGRES_PASSWORD: billiard
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billiard -d billiard"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: billiard-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    container_name: billiard-auth
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://billiard:billiard@postgres:5432/billiard?schema=auth
+      ACCESS_TOKEN_TTL: 15m
+      REFRESH_TOKEN_TTL_DAYS: 30
+      LOG_LEVEL: info
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174,http://localhost:3000
+      COOKIE_SECURE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+
+  payment:
+    build:
+      context: .
+      dockerfile: services/payment/Dockerfile
+    container_name: billiard-payment
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      DATABASE_URL: postgresql://billiard:billiard@postgres:5432/billiard?schema=payment
+      AUTH_SERVICE_URL: http://auth:3001
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-dev-internal-secret-change-in-prod-please}
+      KASPI_MODE: ${KASPI_MODE:-stub}
+      KASPI_API_URL: ${KASPI_API_URL:-}
+      KASPI_MERCHANT_ID: ${KASPI_MERCHANT_ID:-}
+      KASPI_API_KEY: ${KASPI_API_KEY:-}
+      KASPI_WEBHOOK_SECRET: ${KASPI_WEBHOOK_SECRET:-}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:5173}
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3003:3003"
+
+  club:
+    build:
+      context: .
+      dockerfile: services/club/Dockerfile
+    container_name: billiard-club
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      DATABASE_URL: postgresql://billiard:billiard@postgres:5432/billiard?schema=club
+      AUTH_SERVICE_URL: http://auth:3001
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-dev-internal-secret-change-in-prod-please}
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    ports:
+      - "3004:3004"
+
+  tournament:
+    build:
+      context: .
+      dockerfile: services/tournament/Dockerfile
+    container_name: billiard-tournament
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      DATABASE_URL: postgresql://billiard:billiard@postgres:5432/billiard?schema=tournament
+      AUTH_SERVICE_URL: http://auth:3001
+      BOT_SERVICE_URL: http://bot:3005
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-dev-internal-secret-change-in-prod-please}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:5173}
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    ports:
+      - "3002:3002"
+
+  bot:
+    build:
+      context: .
+      dockerfile: services/bot/Dockerfile
+    container_name: billiard-bot
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      AUTH_SERVICE_URL: http://auth:3001
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-dev-internal-secret-change-in-prod-please}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:5173}
+      LOG_LEVEL: info
+    depends_on:
+      auth:
+        condition: service_started
+    ports:
+      - "3005:3005"
+
+  admin:
+    build:
+      context: .
+      dockerfile: services/admin/Dockerfile
+    container_name: billiard-admin
+    environment:
+      NODE_ENV: development
+      PORT: 3006
+      DATABASE_URL: postgresql://billiard:billiard@postgres:5432/billiard?schema=admin
+      AUTH_SERVICE_URL: http://auth:3001
+      TOURNAMENT_SERVICE_URL: http://tournament:3002
+      PAYMENT_SERVICE_URL: http://payment:3003
+      CLUB_SERVICE_URL: http://club:3004
+      BOT_SERVICE_URL: http://bot:3005
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-dev-internal-secret-change-in-prod-please}
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    ports:
+      - "3006:3006"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    container_name: billiard-gateway
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      AUTH_SERVICE_URL: http://auth:3001
+      TOURNAMENT_SERVICE_URL: http://tournament:3002
+      PAYMENT_SERVICE_URL: http://payment:3003
+      CLUB_SERVICE_URL: http://club:3004
+      ADMIN_SERVICE_URL: http://admin:3006
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-dev-internal-secret-change-in-prod-please}
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      LOG_LEVEL: info
+    depends_on:
+      - auth
+      - payment
+      - club
+      - tournament
+      - admin
+      - redis
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

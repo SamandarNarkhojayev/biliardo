@@ -1,0 +1,40 @@
+{
+  "name": "billiard-pro",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @billiard/web run dev",
+    "build": "npm --workspace @billiard/web run build",
+    "typecheck": "npm --workspace @billiard/web run typecheck && npm --workspace @billiard/shared run typecheck && npm --workspace @billiard/auth run typecheck && npm --workspace @billiard/gateway run typecheck && npm --workspace @billiard/tournament run typecheck && npm --workspace @billiard/payment run typecheck && npm --workspace @billiard/club run typecheck && npm --workspace @billiard/bot run typecheck && npm --workspace @billiard/admin run typecheck",
+    "verify:brackets": "tsx scripts/verify-brackets.ts",
+    "services:up": "docker compose up -d postgres redis",
+    "services:down": "docker compose down",
+    "services:logs": "docker compose logs -f",
+    "auth:dev": "npm --workspace @billiard/auth run dev",
+    "auth:migrate": "npm --workspace @billiard/auth run migrate",
+    "gateway:dev": "npm --workspace @billiard/gateway run dev",
+    "tournament:dev": "npm --workspace @billiard/tournament run dev",
+    "payment:dev": "npm --workspace @billiard/payment run dev",
+    "payment:migrate": "npm --workspace @billiard/payment run migrate",
+    "club:dev": "npm --workspace @billiard/club run dev",
+    "club:migrate": "npm --workspace @billiard/club run migrate",
+    "bot:dev": "npm --workspace @billiard/bot run dev",
+    "admin:dev": "npm --workspace @billiard/admin run dev",
+    "admin:migrate": "npm --workspace @billiard/admin run migrate",
+    "admin:generate": "npm --workspace @billiard/admin run generate",
+    "auth:promote": "npm --workspace @billiard/auth run promote",
+    "tournament:migrate": "npm --workspace @billiard/tournament run migrate",
+    "back:dev": "concurrently -n auth,payment,club,tournament,bot,admin,gateway -c cyan,green,magenta,blue,red,white,yellow \"npm run auth:dev\" \"npm run payment:dev\" \"npm run club:dev\" \"npm run tournament:dev\" \"npm run bot:dev\" \"npm run admin:dev\" \"npm run gateway:dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "tsx": "^4.21.0",
+    "typescript": "~5.7.2"
+  }
+}

@@ -1,0 +1,52 @@
+// Admin-сервис: владеет схемой `admin`.
+// Хранит аудит активности (activity_log) и журнал алертов (alert_log).
+// Для сводных отчётов и SQL-консоли читает/пишет ВСЕ схемы через $queryRawUnsafe —
+// это единственный сервис с кросс-схемным доступом (супер-админка).
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/_prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["admin"]
+}
+
+/// Аудит: одна запись на проксированный через gateway запрос.
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  userName   String?
+  role       String?
+  method     String
+  path       String
+  statusCode Int?
+  ip         String?
+  userAgent  String?
+  durationMs Int?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@map("activity_log")
+  @@schema("admin")
+}
+
+/// Журнал алертов (ошибки/аномалии/падения). notified=true когда отправлен в Telegram.
+model AlertLog {
+  id        String   @id @default(cuid())
+  level     String   @default("error")
+  source    String
+  title     String
+  message   String
+  context   Json?
+  notified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("alert_log")
+  @@schema("admin")
+}

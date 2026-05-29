@@ -1,0 +1,76 @@
+name: CI
+
+# Прогон на любой PR и на пуш в любую ветку, КРОМЕ main
+# (main обрабатывает deploy.yml — там те же тесты идут первым джобом).
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Typecheck + smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Generate Prisma clients
+        # prisma generate не коннектится к БД, но датасорс читает env — даём заглушку.
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+        run: |
+          npm --workspace @billiard/auth run generate
+          npm --workspace @billiard/payment run generate
+          npm --workspace @billiard/club run generate
+          npm --workspace @billiard/tournament run generate
+          npm --workspace @billiard/admin run generate
+
+      - name: Typecheck (все workspace'ы)
+        run: npm run typecheck
+
+      - name: Smoke-test сеток турнира
+        run: npm run verify:brackets
+
+  docker-build:
+    name: Build image (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth, payment, club, tournament, bot, admin, gateway, web]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Определить Dockerfile
+        id: df
+        run: |
+          if [ "${{ matrix.service }}" = "web" ]; then
+            echo "file=apps/web/Dockerfile" >> "$GITHUB_OUTPUT"
+          else
+            echo "file=services/${{ matrix.service }}/Dockerfile" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Сборка без push — проверяем, что Dockerfile собирается. Кэш слоёв в GHA.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ steps.df.outputs.file }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}

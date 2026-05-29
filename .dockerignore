@@ -1,0 +1,31 @@
+# Build-контекст для всех Dockerfile — корень репо. Без этого в daemon уедет
+# весь root node_modules (сотни МБ) и сборка в CI будет ползти.
+
+# Зависимости — ставятся заново через npm ci внутри образа.
+node_modules
+**/node_modules
+
+# Сборочные артефакты — пересобираются в образе.
+dist
+**/dist
+.vite
+**/.vite
+**/.vite-temp
+coverage
+**/coverage
+
+# Git и CI.
+.git
+.github
+.gitignore
+
+# Секреты — НИКОГДА не должны попадать в образ.
+.env
+.env.*
+!.env.example
+
+# Прочее.
+*.log
+.DS_Store
+**/.DS_Store
+*.local

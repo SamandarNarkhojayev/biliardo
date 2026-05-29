@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /payment/
+Disallow: /club/dashboard
+
+Sitemap: https://biliardo.kz/sitemap.xml

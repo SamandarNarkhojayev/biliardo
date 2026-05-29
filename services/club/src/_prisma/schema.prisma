@@ -1,0 +1,55 @@
+// Club-сервис: владеет схемой `club`.
+// Хранит снимки состояния клуба (один на клуб, перезаписывается при каждом SYNC)
+// и историю завершённых сессий (idempotent по externalId).
+// userId/clubId — opaque-строки, FK на чужие схемы не используем.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/_prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["club"]
+}
+
+/// Последний снимок состояния клуба. Один на клуб, перезаписывается при каждом SYNC.
+model ClubSyncSnapshot {
+  id       String   @id @default(cuid())
+  clubId   String   @unique // user.id из auth-схемы (opaque)
+  /// JSON: TableSnapshot[] (см. shared types)
+  tables   Json
+  /// JSON: { table, bar, total, sessionsCount }
+  revenue  Json
+  syncedAt DateTime @default(now())
+
+  @@schema("club")
+}
+
+/// История завершённых сессий, присланных desktop-приложением.
+/// externalId уникален в пределах clubId — повторный sync не дублирует.
+model ClubSessionRecord {
+  id         String   @id @default(cuid())
+  clubId     String
+  externalId String
+  tableId    Int
+  tableName  String
+  mode       String
+  startTime  DateTime
+  endTime    DateTime
+  /// Минуты
+  duration   Int
+  /// Тенге
+  tableCost  Int
+  barCost    Int
+  totalCost  Int
+  /// "YYYY-MM-DD" — для быстрой группировки в отчётах
+  date       String
+  createdAt  DateTime @default(now())
+
+  @@unique([clubId, externalId])
+  @@index([clubId, date])
+  @@index([clubId, startTime])
+  @@schema("club")
+}

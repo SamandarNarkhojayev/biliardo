@@ -1,0 +1,140 @@
+// Tournament-сервис — полная модель домена:
+// турниры, участники, матчи, призы. Сетки строятся на бэкенде через @billiard/shared
+// и сохраняются в виде набора Match-записей.
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/_prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["tournament"]
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION
+  ACTIVE
+  COMPLETED
+  CANCELLED
+
+  @@schema("tournament")
+}
+
+enum BracketType {
+  SINGLE_ELIMINATION
+  DOUBLE_ELIMINATION
+  ROUND_ROBIN
+  SWISS
+  GROUP_PLAYOFF
+  PAGE_PLAYOFF
+
+  @@schema("tournament")
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BYE
+
+  @@schema("tournament")
+}
+
+model Tournament {
+  id                  String           @id @default(cuid())
+  name                String
+  description         String?
+  organizerId         String
+  organizerName       String?
+  status              TournamentStatus @default(REGISTRATION)
+  bracketType         BracketType      @default(SINGLE_ELIMINATION)
+  maxParticipants     Int              @default(16)
+  /// Денормализованный счётчик — обновляется триггером в коде при регистрации.
+  participantCount    Int              @default(0)
+  isPublic            Boolean          @default(true)
+  inviteCode          String           @unique @default(cuid())
+  scheduledAt         DateTime?
+  prizeFund           Int?
+  entryFee            Int?
+  location            String?
+  city                String?
+  /// Номера столов, на которых проводится турнир. Программа сама распределяет матчи.
+  tables              Int[]
+  coverGradient       String?
+  /// Когда разослали напоминание «турнир через 2 часа». null — ещё не слали (идемпотентность планировщика).
+  startReminderSentAt DateTime?
+  prizePlaces         PrizePlace[]
+  participants        Participant[]
+  matches             Match[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([city])
+  @@index([organizerId])
+  @@schema("tournament")
+}
+
+model PrizePlace {
+  id           String     @id @default(cuid())
+  place        Int
+  prize        String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId String
+
+  @@unique([tournamentId, place])
+  @@schema("tournament")
+}
+
+model Participant {
+  id           String     @id @default(cuid())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId String
+  /// Если участник — зарегистрированный пользователь, тут его user.id из auth-сервиса.
+  /// FK не делаем (cross-schema) — целостность поддерживаем на уровне приложения.
+  userId       String?
+  name         String
+  phone        String?
+  avatar       String?
+  seed         Int?
+  registeredAt DateTime   @default(now())
+  checkedIn    Boolean    @default(false)
+  /// Оплатил ли участник вступительный взнос. Отмечает организатор вручную.
+  paid         Boolean    @default(false)
+  position     Int
+
+  @@unique([tournamentId, phone])
+  @@unique([tournamentId, userId])
+  @@index([tournamentId])
+  @@schema("tournament")
+}
+
+model Match {
+  id             String      @id @default(cuid())
+  tournament     Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId   String
+  round          Int
+  matchNumber    Int
+  participant1Id String?
+  participant2Id String?
+  winnerId       String?
+  score1         Int?
+  score2         Int?
+  status         MatchStatus @default(PENDING)
+  /// Метка стола, на котором проходит матч. Назначается автоматически из tables.
+  tableLabel     String?
+  /// Свободная строка-тег раунда: 'main' | 'winners' | 'losers' | 'grand-final' |
+  /// 'final' | 'third-place' | 'playoff' | 'group:A' | ...
+  stage          String      @default("main")
+  /// Был ли разослан уведомление "ваш матч готов" — чтобы не слать одно и то же дважды.
+  notifiedReady  Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([tournamentId, round, matchNumber])
+  @@schema("tournament")
+}

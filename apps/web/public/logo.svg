@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <radialGradient id="logo-ball" cx="35%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#3a4554"/>
+      <stop offset="55%" stop-color="#1a2030"/>
+      <stop offset="100%" stop-color="#0a0f1c"/>
+    </radialGradient>
+    <radialGradient id="logo-slider" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#2a3340"/>
+      <stop offset="100%" stop-color="#141a26"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 8-ball -->
+  <circle cx="24" cy="32" r="20" fill="url(#logo-ball)"/>
+  <path d="M13 24 Q11 19 16 16 Q20 14 23 16" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.92"/>
+  <circle cx="14.5" cy="20.5" r="1.2" fill="#ffffff" opacity="0.7"/>
+  <circle cx="24" cy="32" r="7.8" fill="#ffffff"/>
+  <text x="24" y="36.7" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11.5" font-weight="900" fill="#0f1419">8</text>
+
+  <!-- equalizer sliders -->
+  <rect x="44" y="20.5" width="14" height="3" rx="1.5" fill="url(#logo-slider)"/>
+  <rect x="54.5" y="17" width="6.5" height="10" fill="#10b981" rx="0.5"/>
+  <rect x="44" y="30.5" width="14" height="3" rx="1.5" fill="url(#logo-slider)"/>
+  <rect x="46.5" y="28" width="4.5" height="8" rx="1.2" fill="url(#logo-slider)"/>
+  <rect x="44" y="40.5" width="14" height="3" rx="1.5" fill="url(#logo-slider)"/>
+  <rect x="51.5" y="38" width="4.5" height="8" rx="1.2" fill="url(#logo-slider)"/>
+</svg>

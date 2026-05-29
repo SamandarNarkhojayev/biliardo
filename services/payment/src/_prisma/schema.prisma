@@ -1,0 +1,91 @@
+// Payment-сервис: владеет схемой `payment`.
+// Хранит платежи и подписки, ссылается на userId/tournamentId как на opaque строки
+// (без foreign key на чужие схемы — service boundary).
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/_prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["payment"]
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  EXPIRED
+  REFUNDED
+
+  @@schema("payment")
+}
+
+enum PaymentProvider {
+  KASPI
+  STUB
+
+  @@schema("payment")
+}
+
+enum PaymentTargetType {
+  TOURNAMENT
+  SUBSCRIPTION
+
+  @@schema("payment")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+
+  @@schema("payment")
+}
+
+/// Платёж за конкретный турнир или за подписку.
+/// Привязка к user/tournament — opaque-строки (cross-schema FK не используем).
+model Payment {
+  id           String            @id @default(cuid())
+  userId       String
+  planCode     String // PlanCode из shared (FREE/STANDARD/...)
+  amountKzt    Int
+  status       PaymentStatus     @default(PENDING)
+  provider     PaymentProvider
+  targetType   PaymentTargetType
+  tournamentId String? // null для SUBSCRIPTION
+  externalId   String?           @unique // id заказа в Kaspi (или stub)
+  paymentUrl   String?
+  qrCode       String? // base64-PNG или payload
+  raw          Json? // сырой ответ Kaspi для дебага
+  createdAt    DateTime          @default(now())
+  completedAt  DateTime?
+  expiresAt    DateTime?
+
+  subscription Subscription?
+
+  @@index([userId])
+  @@index([tournamentId])
+  @@index([status, createdAt])
+  @@schema("payment")
+}
+
+/// Активная подписка (ENTERPRISE — клубный месячный тариф).
+/// Per-tournament оплаты НЕ создают Subscription — только разблокируют конкретный турнир.
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String
+  planCode  String
+  status    SubscriptionStatus @default(ACTIVE)
+  startsAt  DateTime           @default(now())
+  endsAt    DateTime
+  paymentId String             @unique
+  payment   Payment            @relation(fields: [paymentId], references: [id])
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([userId, status])
+  @@schema("payment")
+}

@@ -1,0 +1,98 @@
+// Auth-сервис: владеет схемой `auth` в общем Postgres.
+// Миграции независимы от других сервисов.
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/_prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["auth"]
+}
+
+enum UserRole {
+  PLAYER
+  ORGANIZER
+  ADMIN
+
+  @@schema("auth")
+}
+
+enum AccountType {
+  PLAYER
+  CLUB
+
+  @@schema("auth")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  phone        String       @unique
+  passwordHash String
+  name         String
+  avatar       String?
+  role         UserRole     @default(ORGANIZER)
+  accountType  AccountType  @default(PLAYER)
+  /// Название клуба (только для accountType=CLUB)
+  clubName     String?
+  /// chat_id из Telegram — куда слать уведомления. NULL = не подключен.
+  telegramChatId   BigInt?  @unique
+  /// Опционально — @username (для отображения «Подключено @user» в UI).
+  telegramUsername String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  refreshTokens     RefreshToken[]
+  clubApiPassword   ClubApiPassword?
+  telegramLinkTokens TelegramLinkToken[]
+
+  @@schema("auth")
+}
+
+/// Одноразовый токен для привязки Telegram-аккаунта. TTL ~10 минут.
+/// Создаётся, когда пользователь жмёт "Подключить TG" в кабинете;
+/// пользователь идёт в бота по deep-link /start <token>, бот валидирует и помечает usedAt.
+model TelegramLinkToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@schema("auth")
+}
+
+/// Пароль API для подключения desktop-приложения клуба к веб-отчётам.
+/// Один на пользователя. Хранится как bcrypt-хэш. Только для accountType=CLUB.
+model ClubApiPassword {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@schema("auth")
+}
+
+/// Refresh-токены для ротации. При logout — помечаем revoked.
+/// Для production-нагрузки лучше вынести в Redis (TTL без таблиц), но
+/// для аудита и отзыва конкретной сессии полезнее БД.
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String?
+  ip        String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  @@index([userId])
+  @@schema("auth")
+}
