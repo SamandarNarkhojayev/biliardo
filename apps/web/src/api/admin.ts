@@ -8,7 +8,7 @@ import type {
   ActivitySessionDto,
   AlertLogDto,
 } from '@billiard/shared'
-import { api } from './client'
+import { api, downloadFile } from './client'
 
 export interface AdminTournamentRow {
   id: string
@@ -107,6 +107,39 @@ export interface AdminClubDetail {
   summary: { sessions: number; revenue: number }
 }
 
+export interface AdminMe {
+  id: string
+  name: string
+  role: string
+  isSuper: boolean
+}
+
+export interface HealthSample {
+  service: string
+  ok: boolean
+  status: number | null
+  latencyMs: number | null
+  createdAt: string
+}
+
+export interface DbDump {
+  generatedAt: string
+  rowCap: number
+  tables: Record<string, { total: number; truncated: boolean; rows: Record<string, unknown>[] }>
+}
+
+export interface BackupFile {
+  name: string
+  sizeBytes: number
+  createdAt: string
+}
+
+export interface BackupList {
+  files: BackupFile[]
+  intervalHours: number
+  retentionDays: number
+}
+
 interface Page {
   search?: string
   limit?: number
@@ -154,4 +187,19 @@ export const adminApi = {
   // ---- Метрики / обслуживание ----
   timeseries: (days = 30) => api.get<{ points: AdminTimeseriesPoint[] }>(`/admin/metrics/timeseries?days=${days}`),
   purgeActivity: () => api.post<{ deleted: number; retentionDays: number }>('/admin/activity/purge'),
+
+  // ---- Роль / здоровье / дамп ----
+  me: () => api.get<AdminMe>('/admin/me'),
+  healthHistory: (minutes = 60) => api.get<{ series: HealthSample[] }>(`/admin/health/history?minutes=${minutes}`),
+  exportDb: () => api.get<DbDump>('/admin/export'),
+
+  // ---- Настоящий бэкап (pg_dump) ----
+  /** Скачать .sql-дамп прямо сейчас (стрим). */
+  backupNow: () => downloadFile('/admin/backup', `billiard-${new Date().toISOString().slice(0, 10)}.sql`),
+  /** Список файловых бэкапов (фоновых + ручных). */
+  listBackups: () => api.get<BackupList>('/admin/backups'),
+  /** Запустить бэкап в файл. */
+  triggerBackup: () => api.post<BackupFile>('/admin/backups'),
+  /** Скачать конкретный файл бэкапа. */
+  downloadBackupFile: (name: string) => downloadFile(`/admin/backups/${encodeURIComponent(name)}`, name),
 }

@@ -1,7 +1,14 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { ApiException } from '@/api/client'
 import { cn } from '@/utils/cn'
+
+/* ───── admin capabilities (role model) ───── */
+
+export const AdminCapsContext = createContext<{ isSuper: boolean }>({ isSuper: true })
+export function useAdminCaps(): { isSuper: boolean } {
+  return useContext(AdminCapsContext)
+}
 
 /* ───── format helpers ───── */
 
@@ -31,7 +38,7 @@ export function fmtDuration(sec: number): string {
 
 /* ───── data fetching ───── */
 
-export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]): {
+export function useAsync<T>(fn: () => Promise<T>, deps: unknown[], opts?: { pollMs?: number }): {
   data: T | null; loading: boolean; error: string | null; reload: () => void
 } {
   const [data, setData] = useState<T | null>(null)
@@ -46,7 +53,30 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]): {
     return () => { alive = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick])
+  // Авто-обновление (live): тихо перезапрашиваем по интервалу.
+  useEffect(() => {
+    if (!opts?.pollMs) return
+    const t = setInterval(() => setTick((x) => x + 1), opts.pollMs)
+    return () => clearInterval(t)
+  }, [opts?.pollMs])
   return { data, loading, error, reload: () => setTick((t) => t + 1) }
+}
+
+/** Тоггл live-обновления — общий контрол. */
+export function LiveToggle({ on, onToggle }: { on: boolean; onToggle: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(!on)}
+      className={cn(
+        'inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+        on ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-400' : 'border-[var(--line-strong)] text-text-secondary hover:text-text-primary',
+      )}
+    >
+      <span className={cn('h-2 w-2 rounded-full', on ? 'animate-pulse bg-emerald-400' : 'bg-text-muted')} />
+      {on ? 'Live' : 'Live выкл'}
+    </button>
+  )
 }
 
 /* ───── primitives ───── */

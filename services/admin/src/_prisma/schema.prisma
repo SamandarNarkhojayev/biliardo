@@ -35,6 +35,21 @@ model ActivityLog {
   @@schema("admin")
 }
 
+/// Сэмплы пинга сервисов — для графиков латентности/аптайма.
+model ServiceHealthSample {
+  id        String   @id @default(cuid())
+  service   String
+  ok        Boolean
+  status    Int?
+  latencyMs Int?
+  createdAt DateTime @default(now())
+
+  @@index([service, createdAt])
+  @@index([createdAt])
+  @@map("service_health_sample")
+  @@schema("admin")
+}
+
 /// Журнал алертов (ошибки/аномалии/падения). notified=true когда отправлен в Telegram.
 model AlertLog {
   id        String   @id @default(cuid())

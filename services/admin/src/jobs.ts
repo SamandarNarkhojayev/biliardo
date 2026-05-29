@@ -2,6 +2,8 @@ import { prisma } from './db.js'
 import { env } from './config.js'
 import { q } from './sql.js'
 import { notifyAdmins } from './alerts.js'
+import { pingAll } from './pings.js'
+import { runBackupToFile, pruneBackups } from './backup.js'
 
 interface Logger {
   info: (o: unknown, m?: string) => void
@@ -24,11 +26,42 @@ async function runRetention(log: Logger): Promise<void> {
     const alerts = await prisma.alertLog.deleteMany({
       where: { createdAt: { lt: new Date(Date.now() - env.ALERT_RETENTION_DAYS * 24 * HOUR_MS) } },
     })
-    if (activity.count > 0 || alerts.count > 0) {
-      log.info({ activity: activity.count, alerts: alerts.count }, 'retention purge')
+    // Сэмплы здоровья растут быстро (раз в минуту) — держим 7 дней.
+    const samples = await prisma.serviceHealthSample.deleteMany({
+      where: { createdAt: { lt: new Date(Date.now() - 7 * 24 * HOUR_MS) } },
+    })
+    if (activity.count > 0 || alerts.count > 0 || samples.count > 0) {
+      log.info({ activity: activity.count, alerts: alerts.count, samples: samples.count }, 'retention purge')
     }
   } catch (err) {
     log.warn({ err: (err as Error).message }, 'retention job failed')
+  }
+}
+
+/** Делает фоновый бэкап БД через pg_dump и удаляет файлы вне ретеншна. */
+async function runScheduledBackup(log: Logger): Promise<void> {
+  if (env.BACKUP_INTERVAL_HOURS <= 0) return
+  const result = await runBackupToFile(log)
+  if (result) {
+    pruneBackups(env.BACKUP_RETENTION_DAYS, log)
+  } else {
+    await notifyAdmins({
+      level: 'error', source: 'backup',
+      title: 'Фоновый бэкап БД упал',
+      message: 'pg_dump вернул не-нулевой код или поток оборвался. Смотри логи admin-сервиса.',
+    }, log).catch(() => undefined)
+  }
+}
+
+/** Пингует сервисы и пишет сэмплы латентности/аптайма в admin.service_health_sample. */
+async function recordHealth(log: Logger): Promise<void> {
+  try {
+    const samples = await pingAll()
+    await prisma.serviceHealthSample.createMany({
+      data: samples.map((s) => ({ service: s.name, ok: s.ok, status: s.status, latencyMs: s.latencyMs })),
+    })
+  } catch (err) {
+    log.warn({ err: (err as Error).message }, 'health sampling failed')
   }
 }
 
@@ -85,11 +118,27 @@ export function startJobs(log: Logger): () => void {
     ? setInterval(() => void runAnomalyCheck(log), MINUTE_MS)
     : null
 
-  log.info({ anomaly: env.ANOMALY_ENABLED, retentionDays: env.ACTIVITY_RETENTION_DAYS }, 'admin jobs started')
+  // Сэмплы здоровья сервисов: сразу при старте и далее раз в минуту.
+  const healthKick = setTimeout(() => void recordHealth(log), 5 * 1000)
+  const healthTimer = setInterval(() => void recordHealth(log), MINUTE_MS)
+
+  // Фоновый бэкап БД — если включён, интервал в часах.
+  const backupTimer = env.BACKUP_INTERVAL_HOURS > 0
+    ? setInterval(() => void runScheduledBackup(log), env.BACKUP_INTERVAL_HOURS * HOUR_MS)
+    : null
+
+  log.info({
+    anomaly: env.ANOMALY_ENABLED,
+    retentionDays: env.ACTIVITY_RETENTION_DAYS,
+    backupIntervalHours: env.BACKUP_INTERVAL_HOURS,
+  }, 'admin jobs started')
 
   return () => {
     clearTimeout(retentionKick)
     clearInterval(retentionTimer)
     if (anomalyTimer) clearInterval(anomalyTimer)
+    clearTimeout(healthKick)
+    clearInterval(healthTimer)
+    if (backupTimer) clearInterval(backupTimer)
   }
 }

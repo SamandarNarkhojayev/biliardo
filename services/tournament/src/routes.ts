@@ -32,7 +32,8 @@ async function requireAuth(req: FastifyRequest): Promise<AuthUser | null> {
 }
 
 function isUnauthorizedOrganizer(t: { organizerId: string }, user: AuthUser): boolean {
-  return t.organizerId !== user.id
+  // Супер-админ управляет любым турниром (override владения).
+  return t.organizerId !== user.id && user.role !== 'ADMIN'
 }
 
 /** Стандартное распределение столов: один UPDATE на матч. Возвращает обновлённый list. */
@@ -323,7 +324,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     const parsed = registerParticipantSchema.safeParse(req.body)
     if (!parsed.success) return reply.code(400).send({ code: 'VALIDATION_ERROR', details: parsed.error.flatten() })
     const d = parsed.data
-    const isOrganizer = t.organizerId === user.id
+    const isOrganizer = t.organizerId === user.id || user.role === 'ADMIN'
     // Если запрашивающий — не организатор, он может зарегистрировать только себя.
     if (!isOrganizer) {
       if (d.userId && d.userId !== user.id) {
@@ -423,7 +424,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     if (!t) return reply.code(404).send({ code: 'NOT_FOUND' })
     const p = await prisma.participant.findUnique({ where: { id: req.params.pid } })
     if (!p || p.tournamentId !== t.id) return reply.code(404).send({ code: 'PARTICIPANT_NOT_FOUND' })
-    const isOrganizer = t.organizerId === user.id
+    const isOrganizer = t.organizerId === user.id || user.role === 'ADMIN'
     const isSelf = !!p.userId && p.userId === user.id
     if (!isOrganizer && !isSelf) return reply.code(403).send({ code: 'FORBIDDEN' })
     if (t.status !== 'REGISTRATION' && t.status !== 'DRAFT') {

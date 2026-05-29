@@ -28,6 +28,21 @@ const envSchema = z.object({
   /** Лимит времени на один SQL-запрос из консоли (мс). */
   SQL_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(15_000),
 
+  /**
+   * Ролевая модель внутри админки: ID супер-админов (через запятую), которым доступны
+   * опасные операции — SQL-запись, удаление, дамп БД, очистка аудита. Остальные ADMIN —
+   * read-only. Пусто = все ADMIN являются супер-админами (обратная совместимость).
+   */
+  ADMIN_SUPERUSER_IDS: z.string().default(''),
+
+  // ---- pg_dump бэкапы ----
+  /** Куда складывать фоновые бэкапы (.sql.gz). */
+  BACKUP_DIR: z.string().default('./backups'),
+  /** Период бэкапа в часах. 0 = выключено (только on-demand через UI). */
+  BACKUP_INTERVAL_HOURS: z.coerce.number().int().min(0).max(168).default(0),
+  /** Сколько дней держать файлы бэкапов перед удалением. */
+  BACKUP_RETENTION_DAYS: z.coerce.number().int().min(1).max(365).default(7),
+
   // ---- Ретеншн аудита ----
   /** Сколько дней хранить записи activity_log (старше — удаляются фоновым джобом). */
   ACTIVITY_RETENTION_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
@@ -60,3 +75,11 @@ if (isProd && parsed.data.INTERNAL_SECRET === DEV_INTERNAL_SECRET) {
 export const env = parsed.data
 
 export const corsOrigins = env.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)
+
+/** Список ID супер-админов. Пустой = ограничения выключены (любой ADMIN — супер). */
+export const superuserIds = env.ADMIN_SUPERUSER_IDS.split(',').map((s) => s.trim()).filter(Boolean)
+
+/** Является ли пользователь супер-админом (доступ к опасным операциям). */
+export function isSuperAdmin(userId: string): boolean {
+  return superuserIds.length === 0 || superuserIds.includes(userId)
+}

@@ -116,3 +116,43 @@ export const api = {
     apiRequest<T>(path, { ...opts, method: 'PATCH', body }),
   delete: <T>(path: string, opts?: RequestOpts) => apiRequest<T>(path, { ...opts, method: 'DELETE' }),
 }
+
+/**
+ * Скачивает бинарный/текстовый ответ как файл, с Bearer-аутентификацией и авто-refresh.
+ * Имя файла берётся из Content-Disposition сервера, иначе из fallbackName.
+ */
+export async function downloadFile(path: string, fallbackName: string): Promise<void> {
+  const url = `${BASE}${path}`
+  const headers = new Headers()
+  const token = accessTokenGetter()
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+  let res = await fetch(url, { headers, credentials: 'include' })
+  if (res.status === 401) {
+    const newToken = await tryRefresh()
+    if (newToken) {
+      headers.set('Authorization', `Bearer ${newToken}`)
+      res = await fetch(url, { headers, credentials: 'include' })
+    } else {
+      onAuthExpired()
+    }
+  }
+  if (!res.ok) {
+    let body: unknown = null
+    try { body = await res.json() } catch { body = null }
+    const err = (body && typeof body === 'object' ? body as ApiError : { code: 'UNKNOWN', message: res.statusText })
+    throw new ApiException(err, res.status)
+  }
+  // Имя из Content-Disposition (если есть)
+  const cd = res.headers.get('content-disposition') ?? ''
+  const m = /filename="?([^";]+)"?/.exec(cd)
+  const filename = m?.[1] ?? fallbackName
+  const blob = await res.blob()
+  const blobUrl = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = blobUrl
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(blobUrl)
+}

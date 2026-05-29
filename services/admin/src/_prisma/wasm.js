@@ -107,6 +107,15 @@ exports.Prisma.ActivityLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ServiceHealthSampleScalarFieldEnum = {
+  id: 'id',
+  service: 'service',
+  ok: 'ok',
+  status: 'status',
+  latencyMs: 'latencyMs',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AlertLogScalarFieldEnum = {
   id: 'id',
   level: 'level',
@@ -147,6 +156,7 @@ exports.Prisma.JsonNullValueFilter = {
 
 exports.Prisma.ModelName = {
   ActivityLog: 'ActivityLog',
+  ServiceHealthSample: 'ServiceHealthSample',
   AlertLog: 'AlertLog'
 };
 /**
@@ -182,7 +192,7 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
@@ -201,13 +211,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// Admin-сервис: владеет схемой `admin`.\n// Хранит аудит активности (activity_log) и журнал алертов (alert_log).\n// Для сводных отчётов и SQL-консоли читает/пишет ВСЕ схемы через $queryRawUnsafe —\n// это единственный сервис с кросс-схемным доступом (супер-админка).\n\ngenerator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../src/_prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n  schemas  = [\"admin\"]\n}\n\n/// Аудит: одна запись на проксированный через gateway запрос.\nmodel ActivityLog {\n  id         String   @id @default(cuid())\n  userId     String?\n  userName   String?\n  role       String?\n  method     String\n  path       String\n  statusCode Int?\n  ip         String?\n  userAgent  String?\n  durationMs Int?\n  createdAt  DateTime @default(now())\n\n  @@index([createdAt])\n  @@index([userId])\n  @@map(\"activity_log\")\n  @@schema(\"admin\")\n}\n\n/// Журнал алертов (ошибки/аномалии/падения). notified=true когда отправлен в Telegram.\nmodel AlertLog {\n  id        String   @id @default(cuid())\n  level     String   @default(\"error\")\n  source    String\n  title     String\n  message   String\n  context   Json?\n  notified  Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  @@index([createdAt])\n  @@map(\"alert_log\")\n  @@schema(\"admin\")\n}\n",
-  "inlineSchemaHash": "b4f7e652215f3e9b8843fa8407c3edfc59c9bdf77b6e7d52d7a0e6f83906b015",
+  "inlineSchema": "// Admin-сервис: владеет схемой `admin`.\n// Хранит аудит активности (activity_log) и журнал алертов (alert_log).\n// Для сводных отчётов и SQL-консоли читает/пишет ВСЕ схемы через $queryRawUnsafe —\n// это единственный сервис с кросс-схемным доступом (супер-админка).\n\ngenerator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../src/_prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n  schemas  = [\"admin\"]\n}\n\n/// Аудит: одна запись на проксированный через gateway запрос.\nmodel ActivityLog {\n  id         String   @id @default(cuid())\n  userId     String?\n  userName   String?\n  role       String?\n  method     String\n  path       String\n  statusCode Int?\n  ip         String?\n  userAgent  String?\n  durationMs Int?\n  createdAt  DateTime @default(now())\n\n  @@index([createdAt])\n  @@index([userId])\n  @@map(\"activity_log\")\n  @@schema(\"admin\")\n}\n\n/// Сэмплы пинга сервисов — для графиков латентности/аптайма.\nmodel ServiceHealthSample {\n  id        String   @id @default(cuid())\n  service   String\n  ok        Boolean\n  status    Int?\n  latencyMs Int?\n  createdAt DateTime @default(now())\n\n  @@index([service, createdAt])\n  @@index([createdAt])\n  @@map(\"service_health_sample\")\n  @@schema(\"admin\")\n}\n\n/// Журнал алертов (ошибки/аномалии/падения). notified=true когда отправлен в Telegram.\nmodel AlertLog {\n  id        String   @id @default(cuid())\n  level     String   @default(\"error\")\n  source    String\n  title     String\n  message   String\n  context   Json?\n  notified  Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  @@index([createdAt])\n  @@map(\"alert_log\")\n  @@schema(\"admin\")\n}\n",
+  "inlineSchemaHash": "6eea9c817f11cebbdd970c37d5b70df9dd2566be325c4681f66584f1a6b762dc",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"ActivityLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"method\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"path\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"statusCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"ip\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"durationMs\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"activity_log\"},\"AlertLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"level\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"context\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"notified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"alert_log\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"ActivityLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"method\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"path\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"statusCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"ip\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"durationMs\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"activity_log\"},\"ServiceHealthSample\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"service\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ok\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"latencyMs\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"service_health_sample\"},\"AlertLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"level\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"context\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"notified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"alert_log\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

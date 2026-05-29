@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type ActivityLog = $Result.DefaultSelection<Prisma.$ActivityLogPayload>
 /**
+ * Model ServiceHealthSample
+ * Сэмплы пинга сервисов — для графиков латентности/аптайма.
+ */
+export type ServiceHealthSample = $Result.DefaultSelection<Prisma.$ServiceHealthSamplePayload>
+/**
  * Model AlertLog
  * Журнал алертов (ошибки/аномалии/падения). notified=true когда отправлен в Telegram.
  */
@@ -151,6 +156,16 @@ export class PrismaClient<
     * ```
     */
   get activityLog(): Prisma.ActivityLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.serviceHealthSample`: Exposes CRUD operations for the **ServiceHealthSample** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ServiceHealthSamples
+    * const serviceHealthSamples = await prisma.serviceHealthSample.findMany()
+    * ```
+    */
+  get serviceHealthSample(): Prisma.ServiceHealthSampleDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.alertLog`: Exposes CRUD operations for the **AlertLog** model.
@@ -603,6 +618,7 @@ export namespace Prisma {
 
   export const ModelName: {
     ActivityLog: 'ActivityLog',
+    ServiceHealthSample: 'ServiceHealthSample',
     AlertLog: 'AlertLog'
   };
 
@@ -622,7 +638,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "activityLog" | "alertLog"
+      modelProps: "activityLog" | "serviceHealthSample" | "alertLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -697,6 +713,80 @@ export namespace Prisma {
           count: {
             args: Prisma.ActivityLogCountArgs<ExtArgs>
             result: $Utils.Optional<ActivityLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      ServiceHealthSample: {
+        payload: Prisma.$ServiceHealthSamplePayload<ExtArgs>
+        fields: Prisma.ServiceHealthSampleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ServiceHealthSampleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ServiceHealthSampleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>
+          }
+          findFirst: {
+            args: Prisma.ServiceHealthSampleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ServiceHealthSampleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>
+          }
+          findMany: {
+            args: Prisma.ServiceHealthSampleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>[]
+          }
+          create: {
+            args: Prisma.ServiceHealthSampleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>
+          }
+          createMany: {
+            args: Prisma.ServiceHealthSampleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ServiceHealthSampleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>[]
+          }
+          delete: {
+            args: Prisma.ServiceHealthSampleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>
+          }
+          update: {
+            args: Prisma.ServiceHealthSampleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>
+          }
+          deleteMany: {
+            args: Prisma.ServiceHealthSampleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ServiceHealthSampleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ServiceHealthSampleUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>[]
+          }
+          upsert: {
+            args: Prisma.ServiceHealthSampleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceHealthSamplePayload>
+          }
+          aggregate: {
+            args: Prisma.ServiceHealthSampleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateServiceHealthSample>
+          }
+          groupBy: {
+            args: Prisma.ServiceHealthSampleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ServiceHealthSampleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ServiceHealthSampleCountArgs<ExtArgs>
+            result: $Utils.Optional<ServiceHealthSampleCountAggregateOutputType> | number
           }
         }
       }
@@ -871,6 +961,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     activityLog?: ActivityLogOmit
+    serviceHealthSample?: ServiceHealthSampleOmit
     alertLog?: AlertLogOmit
   }
 
@@ -2064,6 +2155,1052 @@ export namespace Prisma {
 
 
   /**
+   * Model ServiceHealthSample
+   */
+
+  export type AggregateServiceHealthSample = {
+    _count: ServiceHealthSampleCountAggregateOutputType | null
+    _avg: ServiceHealthSampleAvgAggregateOutputType | null
+    _sum: ServiceHealthSampleSumAggregateOutputType | null
+    _min: ServiceHealthSampleMinAggregateOutputType | null
+    _max: ServiceHealthSampleMaxAggregateOutputType | null
+  }
+
+  export type ServiceHealthSampleAvgAggregateOutputType = {
+    status: number | null
+    latencyMs: number | null
+  }
+
+  export type ServiceHealthSampleSumAggregateOutputType = {
+    status: number | null
+    latencyMs: number | null
+  }
+
+  export type ServiceHealthSampleMinAggregateOutputType = {
+    id: string | null
+    service: string | null
+    ok: boolean | null
+    status: number | null
+    latencyMs: number | null
+    createdAt: Date | null
+  }
+
+  export type ServiceHealthSampleMaxAggregateOutputType = {
+    id: string | null
+    service: string | null
+    ok: boolean | null
+    status: number | null
+    latencyMs: number | null
+    createdAt: Date | null
+  }
+
+  export type ServiceHealthSampleCountAggregateOutputType = {
+    id: number
+    service: number
+    ok: number
+    status: number
+    latencyMs: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ServiceHealthSampleAvgAggregateInputType = {
+    status?: true
+    latencyMs?: true
+  }
+
+  export type ServiceHealthSampleSumAggregateInputType = {
+    status?: true
+    latencyMs?: true
+  }
+
+  export type ServiceHealthSampleMinAggregateInputType = {
+    id?: true
+    service?: true
+    ok?: true
+    status?: true
+    latencyMs?: true
+    createdAt?: true
+  }
+
+  export type ServiceHealthSampleMaxAggregateInputType = {
+    id?: true
+    service?: true
+    ok?: true
+    status?: true
+    latencyMs?: true
+    createdAt?: true
+  }
+
+  export type ServiceHealthSampleCountAggregateInputType = {
+    id?: true
+    service?: true
+    ok?: true
+    status?: true
+    latencyMs?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ServiceHealthSampleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ServiceHealthSample to aggregate.
+     */
+    where?: ServiceHealthSampleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceHealthSamples to fetch.
+     */
+    orderBy?: ServiceHealthSampleOrderByWithRelationInput | ServiceHealthSampleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ServiceHealthSampleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceHealthSamples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceHealthSamples.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ServiceHealthSamples
+    **/
+    _count?: true | ServiceHealthSampleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ServiceHealthSampleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ServiceHealthSampleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ServiceHealthSampleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ServiceHealthSampleMaxAggregateInputType
+  }
+
+  export type GetServiceHealthSampleAggregateType<T extends ServiceHealthSampleAggregateArgs> = {
+        [P in keyof T & keyof AggregateServiceHealthSample]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateServiceHealthSample[P]>
+      : GetScalarType<T[P], AggregateServiceHealthSample[P]>
+  }
+
+
+
+
+  export type ServiceHealthSampleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ServiceHealthSampleWhereInput
+    orderBy?: ServiceHealthSampleOrderByWithAggregationInput | ServiceHealthSampleOrderByWithAggregationInput[]
+    by: ServiceHealthSampleScalarFieldEnum[] | ServiceHealthSampleScalarFieldEnum
+    having?: ServiceHealthSampleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ServiceHealthSampleCountAggregateInputType | true
+    _avg?: ServiceHealthSampleAvgAggregateInputType
+    _sum?: ServiceHealthSampleSumAggregateInputType
+    _min?: ServiceHealthSampleMinAggregateInputType
+    _max?: ServiceHealthSampleMaxAggregateInputType
+  }
+
+  export type ServiceHealthSampleGroupByOutputType = {
+    id: string
+    service: string
+    ok: boolean
+    status: number | null
+    latencyMs: number | null
+    createdAt: Date
+    _count: ServiceHealthSampleCountAggregateOutputType | null
+    _avg: ServiceHealthSampleAvgAggregateOutputType | null
+    _sum: ServiceHealthSampleSumAggregateOutputType | null
+    _min: ServiceHealthSampleMinAggregateOutputType | null
+    _max: ServiceHealthSampleMaxAggregateOutputType | null
+  }
+
+  type GetServiceHealthSampleGroupByPayload<T extends ServiceHealthSampleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ServiceHealthSampleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ServiceHealthSampleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ServiceHealthSampleGroupByOutputType[P]>
+            : GetScalarType<T[P], ServiceHealthSampleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ServiceHealthSampleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    ok?: boolean
+    status?: boolean
+    latencyMs?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["serviceHealthSample"]>
+
+  export type ServiceHealthSampleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    ok?: boolean
+    status?: boolean
+    latencyMs?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["serviceHealthSample"]>
+
+  export type ServiceHealthSampleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    ok?: boolean
+    status?: boolean
+    latencyMs?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["serviceHealthSample"]>
+
+  export type ServiceHealthSampleSelectScalar = {
+    id?: boolean
+    service?: boolean
+    ok?: boolean
+    status?: boolean
+    latencyMs?: boolean
+    createdAt?: boolean
+  }
+
+  export type ServiceHealthSampleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "service" | "ok" | "status" | "latencyMs" | "createdAt", ExtArgs["result"]["serviceHealthSample"]>
+
+  export type $ServiceHealthSamplePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ServiceHealthSample"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      service: string
+      ok: boolean
+      status: number | null
+      latencyMs: number | null
+      createdAt: Date
+    }, ExtArgs["result"]["serviceHealthSample"]>
+    composites: {}
+  }
+
+  type ServiceHealthSampleGetPayload<S extends boolean | null | undefined | ServiceHealthSampleDefaultArgs> = $Result.GetResult<Prisma.$ServiceHealthSamplePayload, S>
+
+  type ServiceHealthSampleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ServiceHealthSampleFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ServiceHealthSampleCountAggregateInputType | true
+    }
+
+  export interface ServiceHealthSampleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ServiceHealthSample'], meta: { name: 'ServiceHealthSample' } }
+    /**
+     * Find zero or one ServiceHealthSample that matches the filter.
+     * @param {ServiceHealthSampleFindUniqueArgs} args - Arguments to find a ServiceHealthSample
+     * @example
+     * // Get one ServiceHealthSample
+     * const serviceHealthSample = await prisma.serviceHealthSample.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ServiceHealthSampleFindUniqueArgs>(args: SelectSubset<T, ServiceHealthSampleFindUniqueArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ServiceHealthSample that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ServiceHealthSampleFindUniqueOrThrowArgs} args - Arguments to find a ServiceHealthSample
+     * @example
+     * // Get one ServiceHealthSample
+     * const serviceHealthSample = await prisma.serviceHealthSample.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ServiceHealthSampleFindUniqueOrThrowArgs>(args: SelectSubset<T, ServiceHealthSampleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ServiceHealthSample that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceHealthSampleFindFirstArgs} args - Arguments to find a ServiceHealthSample
+     * @example
+     * // Get one ServiceHealthSample
+     * const serviceHealthSample = await prisma.serviceHealthSample.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ServiceHealthSampleFindFirstArgs>(args?: SelectSubset<T, ServiceHealthSampleFindFirstArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ServiceHealthSample that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceHealthSampleFindFirstOrThrowArgs} args - Arguments to find a ServiceHealthSample
+     * @example
+     * // Get one ServiceHealthSample
+     * const serviceHealthSample = await prisma.serviceHealthSample.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ServiceHealthSampleFindFirstOrThrowArgs>(args?: SelectSubset<T, ServiceHealthSampleFindFirstOrThrowArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ServiceHealthSamples that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceHealthSampleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ServiceHealthSamples
+     * const serviceHealthSamples = await prisma.serviceHealthSample.findMany()
+     * 
+     * // Get first 10 ServiceHealthSamples
+     * const serviceHealthSamples = await prisma.serviceHealthSample.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const serviceHealthSampleWithIdOnly = await prisma.serviceHealthSample.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ServiceHealthSampleFindManyArgs>(args?: SelectSubset<T, ServiceHealthSampleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ServiceHealthSample.
+     * @param {ServiceHealthSampleCreateArgs} args - Arguments to create a ServiceHealthSample.
+     * @example
+     * // Create one ServiceHealthSample
+     * const ServiceHealthSample = await prisma.serviceHealthSample.create({
+     *   data: {
+     *     // ... data to create a ServiceHealthSample
+     *   }
+     * })
+     * 
+     */
+    create<T extends ServiceHealthSampleCreateArgs>(args: SelectSubset<T, ServiceHealthSampleCreateArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ServiceHealthSamples.
+     * @param {ServiceHealthSampleCreateManyArgs} args - Arguments to create many ServiceHealthSamples.
+     * @example
+     * // Create many ServiceHealthSamples
+     * const serviceHealthSample = await prisma.serviceHealthSample.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ServiceHealthSampleCreateManyArgs>(args?: SelectSubset<T, ServiceHealthSampleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ServiceHealthSamples and returns the data saved in the database.
+     * @param {ServiceHealthSampleCreateManyAndReturnArgs} args - Arguments to create many ServiceHealthSamples.
+     * @example
+     * // Create many ServiceHealthSamples
+     * const serviceHealthSample = await prisma.serviceHealthSample.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ServiceHealthSamples and only return the `id`
+     * const serviceHealthSampleWithIdOnly = await prisma.serviceHealthSample.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ServiceHealthSampleCreateManyAndReturnArgs>(args?: SelectSubset<T, ServiceHealthSampleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ServiceHealthSample.
+     * @param {ServiceHealthSampleDeleteArgs} args - Arguments to delete one ServiceHealthSample.
+     * @example
+     * // Delete one ServiceHealthSample
+     * const ServiceHealthSample = await prisma.serviceHealthSample.delete({
+     *   where: {
+     *     // ... filter to delete one ServiceHealthSample
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ServiceHealthSampleDeleteArgs>(args: SelectSubset<T, ServiceHealthSampleDeleteArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ServiceHealthSample.
+     * @param {ServiceHealthSampleUpdateArgs} args - Arguments to update one ServiceHealthSample.
+     * @example
+     * // Update one ServiceHealthSample
+     * const serviceHealthSample = await prisma.serviceHealthSample.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ServiceHealthSampleUpdateArgs>(args: SelectSubset<T, ServiceHealthSampleUpdateArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ServiceHealthSamples.
+     * @param {ServiceHealthSampleDeleteManyArgs} args - Arguments to filter ServiceHealthSamples to delete.
+     * @example
+     * // Delete a few ServiceHealthSamples
+     * const { count } = await prisma.serviceHealthSample.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ServiceHealthSampleDeleteManyArgs>(args?: SelectSubset<T, ServiceHealthSampleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ServiceHealthSamples.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceHealthSampleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ServiceHealthSamples
+     * const serviceHealthSample = await prisma.serviceHealthSample.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ServiceHealthSampleUpdateManyArgs>(args: SelectSubset<T, ServiceHealthSampleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ServiceHealthSamples and returns the data updated in the database.
+     * @param {ServiceHealthSampleUpdateManyAndReturnArgs} args - Arguments to update many ServiceHealthSamples.
+     * @example
+     * // Update many ServiceHealthSamples
+     * const serviceHealthSample = await prisma.serviceHealthSample.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ServiceHealthSamples and only return the `id`
+     * const serviceHealthSampleWithIdOnly = await prisma.serviceHealthSample.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ServiceHealthSampleUpdateManyAndReturnArgs>(args: SelectSubset<T, ServiceHealthSampleUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ServiceHealthSample.
+     * @param {ServiceHealthSampleUpsertArgs} args - Arguments to update or create a ServiceHealthSample.
+     * @example
+     * // Update or create a ServiceHealthSample
+     * const serviceHealthSample = await prisma.serviceHealthSample.upsert({
+     *   create: {
+     *     // ... data to create a ServiceHealthSample
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ServiceHealthSample we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ServiceHealthSampleUpsertArgs>(args: SelectSubset<T, ServiceHealthSampleUpsertArgs<ExtArgs>>): Prisma__ServiceHealthSampleClient<$Result.GetResult<Prisma.$ServiceHealthSamplePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ServiceHealthSamples.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceHealthSampleCountArgs} args - Arguments to filter ServiceHealthSamples to count.
+     * @example
+     * // Count the number of ServiceHealthSamples
+     * const count = await prisma.serviceHealthSample.count({
+     *   where: {
+     *     // ... the filter for the ServiceHealthSamples we want to count
+     *   }
+     * })
+    **/
+    count<T extends ServiceHealthSampleCountArgs>(
+      args?: Subset<T, ServiceHealthSampleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ServiceHealthSampleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ServiceHealthSample.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceHealthSampleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ServiceHealthSampleAggregateArgs>(args: Subset<T, ServiceHealthSampleAggregateArgs>): Prisma.PrismaPromise<GetServiceHealthSampleAggregateType<T>>
+
+    /**
+     * Group by ServiceHealthSample.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceHealthSampleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ServiceHealthSampleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ServiceHealthSampleGroupByArgs['orderBy'] }
+        : { orderBy?: ServiceHealthSampleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ServiceHealthSampleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetServiceHealthSampleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ServiceHealthSample model
+   */
+  readonly fields: ServiceHealthSampleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ServiceHealthSample.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ServiceHealthSampleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ServiceHealthSample model
+   */
+  interface ServiceHealthSampleFieldRefs {
+    readonly id: FieldRef<"ServiceHealthSample", 'String'>
+    readonly service: FieldRef<"ServiceHealthSample", 'String'>
+    readonly ok: FieldRef<"ServiceHealthSample", 'Boolean'>
+    readonly status: FieldRef<"ServiceHealthSample", 'Int'>
+    readonly latencyMs: FieldRef<"ServiceHealthSample", 'Int'>
+    readonly createdAt: FieldRef<"ServiceHealthSample", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ServiceHealthSample findUnique
+   */
+  export type ServiceHealthSampleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceHealthSample to fetch.
+     */
+    where: ServiceHealthSampleWhereUniqueInput
+  }
+
+  /**
+   * ServiceHealthSample findUniqueOrThrow
+   */
+  export type ServiceHealthSampleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceHealthSample to fetch.
+     */
+    where: ServiceHealthSampleWhereUniqueInput
+  }
+
+  /**
+   * ServiceHealthSample findFirst
+   */
+  export type ServiceHealthSampleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceHealthSample to fetch.
+     */
+    where?: ServiceHealthSampleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceHealthSamples to fetch.
+     */
+    orderBy?: ServiceHealthSampleOrderByWithRelationInput | ServiceHealthSampleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ServiceHealthSamples.
+     */
+    cursor?: ServiceHealthSampleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceHealthSamples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceHealthSamples.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ServiceHealthSamples.
+     */
+    distinct?: ServiceHealthSampleScalarFieldEnum | ServiceHealthSampleScalarFieldEnum[]
+  }
+
+  /**
+   * ServiceHealthSample findFirstOrThrow
+   */
+  export type ServiceHealthSampleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceHealthSample to fetch.
+     */
+    where?: ServiceHealthSampleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceHealthSamples to fetch.
+     */
+    orderBy?: ServiceHealthSampleOrderByWithRelationInput | ServiceHealthSampleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ServiceHealthSamples.
+     */
+    cursor?: ServiceHealthSampleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceHealthSamples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceHealthSamples.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ServiceHealthSamples.
+     */
+    distinct?: ServiceHealthSampleScalarFieldEnum | ServiceHealthSampleScalarFieldEnum[]
+  }
+
+  /**
+   * ServiceHealthSample findMany
+   */
+  export type ServiceHealthSampleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceHealthSamples to fetch.
+     */
+    where?: ServiceHealthSampleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceHealthSamples to fetch.
+     */
+    orderBy?: ServiceHealthSampleOrderByWithRelationInput | ServiceHealthSampleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ServiceHealthSamples.
+     */
+    cursor?: ServiceHealthSampleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceHealthSamples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceHealthSamples.
+     */
+    skip?: number
+    distinct?: ServiceHealthSampleScalarFieldEnum | ServiceHealthSampleScalarFieldEnum[]
+  }
+
+  /**
+   * ServiceHealthSample create
+   */
+  export type ServiceHealthSampleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ServiceHealthSample.
+     */
+    data: XOR<ServiceHealthSampleCreateInput, ServiceHealthSampleUncheckedCreateInput>
+  }
+
+  /**
+   * ServiceHealthSample createMany
+   */
+  export type ServiceHealthSampleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ServiceHealthSamples.
+     */
+    data: ServiceHealthSampleCreateManyInput | ServiceHealthSampleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ServiceHealthSample createManyAndReturn
+   */
+  export type ServiceHealthSampleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * The data used to create many ServiceHealthSamples.
+     */
+    data: ServiceHealthSampleCreateManyInput | ServiceHealthSampleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ServiceHealthSample update
+   */
+  export type ServiceHealthSampleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ServiceHealthSample.
+     */
+    data: XOR<ServiceHealthSampleUpdateInput, ServiceHealthSampleUncheckedUpdateInput>
+    /**
+     * Choose, which ServiceHealthSample to update.
+     */
+    where: ServiceHealthSampleWhereUniqueInput
+  }
+
+  /**
+   * ServiceHealthSample updateMany
+   */
+  export type ServiceHealthSampleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ServiceHealthSamples.
+     */
+    data: XOR<ServiceHealthSampleUpdateManyMutationInput, ServiceHealthSampleUncheckedUpdateManyInput>
+    /**
+     * Filter which ServiceHealthSamples to update
+     */
+    where?: ServiceHealthSampleWhereInput
+    /**
+     * Limit how many ServiceHealthSamples to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ServiceHealthSample updateManyAndReturn
+   */
+  export type ServiceHealthSampleUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * The data used to update ServiceHealthSamples.
+     */
+    data: XOR<ServiceHealthSampleUpdateManyMutationInput, ServiceHealthSampleUncheckedUpdateManyInput>
+    /**
+     * Filter which ServiceHealthSamples to update
+     */
+    where?: ServiceHealthSampleWhereInput
+    /**
+     * Limit how many ServiceHealthSamples to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ServiceHealthSample upsert
+   */
+  export type ServiceHealthSampleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ServiceHealthSample to update in case it exists.
+     */
+    where: ServiceHealthSampleWhereUniqueInput
+    /**
+     * In case the ServiceHealthSample found by the `where` argument doesn't exist, create a new ServiceHealthSample with this data.
+     */
+    create: XOR<ServiceHealthSampleCreateInput, ServiceHealthSampleUncheckedCreateInput>
+    /**
+     * In case the ServiceHealthSample was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ServiceHealthSampleUpdateInput, ServiceHealthSampleUncheckedUpdateInput>
+  }
+
+  /**
+   * ServiceHealthSample delete
+   */
+  export type ServiceHealthSampleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+    /**
+     * Filter which ServiceHealthSample to delete.
+     */
+    where: ServiceHealthSampleWhereUniqueInput
+  }
+
+  /**
+   * ServiceHealthSample deleteMany
+   */
+  export type ServiceHealthSampleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ServiceHealthSamples to delete
+     */
+    where?: ServiceHealthSampleWhereInput
+    /**
+     * Limit how many ServiceHealthSamples to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ServiceHealthSample without action
+   */
+  export type ServiceHealthSampleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceHealthSample
+     */
+    select?: ServiceHealthSampleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceHealthSample
+     */
+    omit?: ServiceHealthSampleOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model AlertLog
    */
 
@@ -3124,6 +4261,18 @@ export namespace Prisma {
   export type ActivityLogScalarFieldEnum = (typeof ActivityLogScalarFieldEnum)[keyof typeof ActivityLogScalarFieldEnum]
 
 
+  export const ServiceHealthSampleScalarFieldEnum: {
+    id: 'id',
+    service: 'service',
+    ok: 'ok',
+    status: 'status',
+    latencyMs: 'latencyMs',
+    createdAt: 'createdAt'
+  };
+
+  export type ServiceHealthSampleScalarFieldEnum = (typeof ServiceHealthSampleScalarFieldEnum)[keyof typeof ServiceHealthSampleScalarFieldEnum]
+
+
   export const AlertLogScalarFieldEnum: {
     id: 'id',
     level: 'level',
@@ -3227,6 +4376,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Json'
    */
   export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -3237,13 +4393,6 @@ export namespace Prisma {
    * Reference to a field of type 'QueryMode'
    */
   export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -3346,6 +4495,65 @@ export namespace Prisma {
     userAgent?: StringNullableWithAggregatesFilter<"ActivityLog"> | string | null
     durationMs?: IntNullableWithAggregatesFilter<"ActivityLog"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"ActivityLog"> | Date | string
+  }
+
+  export type ServiceHealthSampleWhereInput = {
+    AND?: ServiceHealthSampleWhereInput | ServiceHealthSampleWhereInput[]
+    OR?: ServiceHealthSampleWhereInput[]
+    NOT?: ServiceHealthSampleWhereInput | ServiceHealthSampleWhereInput[]
+    id?: StringFilter<"ServiceHealthSample"> | string
+    service?: StringFilter<"ServiceHealthSample"> | string
+    ok?: BoolFilter<"ServiceHealthSample"> | boolean
+    status?: IntNullableFilter<"ServiceHealthSample"> | number | null
+    latencyMs?: IntNullableFilter<"ServiceHealthSample"> | number | null
+    createdAt?: DateTimeFilter<"ServiceHealthSample"> | Date | string
+  }
+
+  export type ServiceHealthSampleOrderByWithRelationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    ok?: SortOrder
+    status?: SortOrderInput | SortOrder
+    latencyMs?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ServiceHealthSampleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ServiceHealthSampleWhereInput | ServiceHealthSampleWhereInput[]
+    OR?: ServiceHealthSampleWhereInput[]
+    NOT?: ServiceHealthSampleWhereInput | ServiceHealthSampleWhereInput[]
+    service?: StringFilter<"ServiceHealthSample"> | string
+    ok?: BoolFilter<"ServiceHealthSample"> | boolean
+    status?: IntNullableFilter<"ServiceHealthSample"> | number | null
+    latencyMs?: IntNullableFilter<"ServiceHealthSample"> | number | null
+    createdAt?: DateTimeFilter<"ServiceHealthSample"> | Date | string
+  }, "id">
+
+  export type ServiceHealthSampleOrderByWithAggregationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    ok?: SortOrder
+    status?: SortOrderInput | SortOrder
+    latencyMs?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: ServiceHealthSampleCountOrderByAggregateInput
+    _avg?: ServiceHealthSampleAvgOrderByAggregateInput
+    _max?: ServiceHealthSampleMaxOrderByAggregateInput
+    _min?: ServiceHealthSampleMinOrderByAggregateInput
+    _sum?: ServiceHealthSampleSumOrderByAggregateInput
+  }
+
+  export type ServiceHealthSampleScalarWhereWithAggregatesInput = {
+    AND?: ServiceHealthSampleScalarWhereWithAggregatesInput | ServiceHealthSampleScalarWhereWithAggregatesInput[]
+    OR?: ServiceHealthSampleScalarWhereWithAggregatesInput[]
+    NOT?: ServiceHealthSampleScalarWhereWithAggregatesInput | ServiceHealthSampleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ServiceHealthSample"> | string
+    service?: StringWithAggregatesFilter<"ServiceHealthSample"> | string
+    ok?: BoolWithAggregatesFilter<"ServiceHealthSample"> | boolean
+    status?: IntNullableWithAggregatesFilter<"ServiceHealthSample"> | number | null
+    latencyMs?: IntNullableWithAggregatesFilter<"ServiceHealthSample"> | number | null
+    createdAt?: DateTimeWithAggregatesFilter<"ServiceHealthSample"> | Date | string
   }
 
   export type AlertLogWhereInput = {
@@ -3510,6 +4718,69 @@ export namespace Prisma {
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceHealthSampleCreateInput = {
+    id?: string
+    service: string
+    ok: boolean
+    status?: number | null
+    latencyMs?: number | null
+    createdAt?: Date | string
+  }
+
+  export type ServiceHealthSampleUncheckedCreateInput = {
+    id?: string
+    service: string
+    ok: boolean
+    status?: number | null
+    latencyMs?: number | null
+    createdAt?: Date | string
+  }
+
+  export type ServiceHealthSampleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    ok?: BoolFieldUpdateOperationsInput | boolean
+    status?: NullableIntFieldUpdateOperationsInput | number | null
+    latencyMs?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceHealthSampleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    ok?: BoolFieldUpdateOperationsInput | boolean
+    status?: NullableIntFieldUpdateOperationsInput | number | null
+    latencyMs?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceHealthSampleCreateManyInput = {
+    id?: string
+    service: string
+    ok: boolean
+    status?: number | null
+    latencyMs?: number | null
+    createdAt?: Date | string
+  }
+
+  export type ServiceHealthSampleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    ok?: BoolFieldUpdateOperationsInput | boolean
+    status?: NullableIntFieldUpdateOperationsInput | number | null
+    latencyMs?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceHealthSampleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    ok?: BoolFieldUpdateOperationsInput | boolean
+    status?: NullableIntFieldUpdateOperationsInput | number | null
+    latencyMs?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -3764,6 +5035,56 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type ServiceHealthSampleCountOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    ok?: SortOrder
+    status?: SortOrder
+    latencyMs?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ServiceHealthSampleAvgOrderByAggregateInput = {
+    status?: SortOrder
+    latencyMs?: SortOrder
+  }
+
+  export type ServiceHealthSampleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    ok?: SortOrder
+    status?: SortOrder
+    latencyMs?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ServiceHealthSampleMinOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    ok?: SortOrder
+    status?: SortOrder
+    latencyMs?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ServiceHealthSampleSumOrderByAggregateInput = {
+    status?: SortOrder
+    latencyMs?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -3786,11 +5107,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type AlertLogCountOrderByAggregateInput = {
@@ -3848,14 +5164,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -4022,6 +5330,14 @@ export namespace Prisma {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -4044,14 +5360,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
 

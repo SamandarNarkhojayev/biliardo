@@ -41,7 +41,7 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 384M
+          memory: 1G
 
   redis:
     <<: *svc-defaults
@@ -49,7 +49,7 @@ services:
     container_name: billiard-redis
     # Persist для BullMQ-очередей (потеря очереди = потеря зависших регистраций).
     # appendonly + appendfsync everysec — стандарт для durability без сильной просадки.
-    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "64mb", "--maxmemory-policy", "noeviction"]
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
     volumes:
       - redis_data:/data
     healthcheck:
@@ -61,7 +61,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 96M
+          memory: 512M
 
   auth:
     <<: *svc-defaults
@@ -107,7 +107,7 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 256M
+          memory: 768M
 
   payment:
     <<: *svc-defaults
@@ -145,7 +145,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 150M
+          memory: 512M
 
   club:
     <<: *svc-defaults
@@ -177,7 +177,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 150M
+          memory: 512M
 
   tournament:
     <<: *svc-defaults
@@ -211,7 +211,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 200M
+          memory: 512M
 
   bot:
     <<: *svc-defaults
@@ -242,7 +242,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 128M
+          memory: 256M
 
   admin:
     <<: *svc-defaults
@@ -281,7 +281,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 128M
+          memory: 384M
 
   gateway:
     <<: *svc-defaults
@@ -325,7 +325,7 @@ services:
       resources:
         limits:
           cpus: "2"
-          memory: 200M
+          memory: 768M
 
   web:
     <<: *svc-defaults
@@ -346,7 +346,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 32M
+          memory: 128M
 
   nginx:
     <<: *svc-defaults
@@ -370,7 +370,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 48M
+          memory: 256M
 
   # certbot: --webroot. Запуск выпуска/продления — отдельной командой,
   # см. infra/nginx/README.md.

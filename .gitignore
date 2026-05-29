@@ -1,10 +1,22 @@
+# ── deps & build artifacts ──
 node_modules
 dist
-.DS_Store
-*.log
 .vite
+**/.vite-temp
+
+# ── logs & OS ──
+*.log
+.DS_Store
+
+# ── секреты: env-файлы ──
+# Коммитим ТОЛЬКО шаблон .env.example. Всё остальное (.env, .env.dev, .env.prod,
+# per-service services/*/.env) — локальные/прод-секреты, в git не попадают.
 .env
-.env.local
-.env.prod
-.env.production
-.env.*.local
+.env.*
+!.env.example
+services/*/.env
+apps/*/.env
+
+# ── ключи и сертификаты ──
+*.pem
+*.key

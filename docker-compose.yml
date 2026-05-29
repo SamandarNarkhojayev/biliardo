@@ -154,6 +154,9 @@ services:
       INTERNAL_SECRET: ${INTERNAL_SECRET:-dev-internal-secret-change-in-prod-please}
       CORS_ORIGINS: http://localhost:5173,http://localhost:3000
       LOG_LEVEL: info
+      BACKUP_DIR: /app/backups
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-0}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-7}
     depends_on:
       postgres:
         condition: service_healthy
@@ -161,6 +164,8 @@ services:
         condition: service_started
     ports:
       - "3006:3006"
+    volumes:
+      - admin_backups:/app/backups
 
   gateway:
     build:
@@ -191,3 +196,4 @@ services:
 
 volumes:
   postgres_data:
+  admin_backups:

@@ -4,14 +4,20 @@ import { z } from 'zod'
 import type {
   AdminOverview,
   AdminHealth,
-  AdminServiceHealth,
   AdminSqlResult,
 } from '@billiard/shared'
 import { prisma } from './db.js'
-import { env } from './config.js'
-import { requireAdmin, type AuthContext } from './auth-context.js'
+import { env, isSuperAdmin } from './config.js'
+import { requireAdmin, requireSuperAdmin, type AuthContext } from './auth-context.js'
 import { q, exec, runSql, buildUpdate, type ColSpec } from './sql.js'
 import { notifyAdmins } from './alerts.js'
+import { exportDatabase } from './export.js'
+import { healthHistory } from './health-history.js'
+import { pingAll } from './pings.js'
+import {
+  spawnPgDump, runBackupToFile, listBackups, backupFilePath, openBackupForRead,
+} from './backup.js'
+import { existsSync } from 'node:fs'
 
 function safeEqualInternalSecret(presented: unknown): boolean {
   if (typeof presented !== 'string') return false
@@ -54,23 +60,6 @@ const activityIngest = z.object({
   userAgent: z.string().max(500).nullable().optional(),
   durationMs: z.number().int().nullable().optional(),
 })
-
-async function pingService(name: string, url: string): Promise<AdminServiceHealth> {
-  const startedAt = Date.now()
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), 3000)
-  try {
-    const res = await fetch(`${url.replace(/\/$/, '')}/health`, { signal: ctrl.signal })
-    const latencyMs = Date.now() - startedAt
-    let body: unknown = null
-    try { body = await res.json() } catch { /* ignore non-json */ }
-    return { name, url, ok: res.ok, status: res.status, latencyMs, body }
-  } catch {
-    return { name, url, ok: false, status: null, latencyMs: Date.now() - startedAt }
-  } finally {
-    clearTimeout(timer)
-  }
-}
 
 // Белые списки колонок для структурного редактирования (имена НЕ из пользовательского ввода).
 const USER_COLS: Record<string, ColSpec> = {
@@ -128,6 +117,13 @@ function paramId(req: FastifyRequest): string {
 
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
   app.get('/health', async () => ({ status: 'ok', service: 'admin', time: new Date().toISOString() }))
+
+  // Кто я и что мне можно (для гейтинга UI).
+  app.get('/admin/me', async (req, reply) => {
+    const user = requireAdmin(req, reply)
+    if (!user) return
+    return { id: user.id, name: user.name, role: user.role, isSuper: isSuperAdmin(user.id) }
+  })
 
   // ---- Сводка ----
   app.get('/admin/overview', async (req, reply) => {
@@ -344,13 +340,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   app.get('/admin/health', async (req, reply) => {
     if (!requireAdmin(req, reply)) return
     const [services, dbSize, conns, tables] = await Promise.all([
-      Promise.all([
-        pingService('auth', env.AUTH_SERVICE_URL),
-        pingService('tournament', env.TOURNAMENT_SERVICE_URL),
-        pingService('payment', env.PAYMENT_SERVICE_URL),
-        pingService('club', env.CLUB_SERVICE_URL),
-        ...(env.BOT_SERVICE_URL ? [pingService('bot', env.BOT_SERVICE_URL)] : []),
-      ]),
+      pingAll(),
       q<{ size: number }>(`SELECT pg_database_size(current_database())::bigint AS size`),
       q<{ c: number }>(`SELECT count(*)::int c FROM pg_stat_activity WHERE datname = current_database()`),
       q<{ schema: string; table: string; rows: number }>(
@@ -372,7 +362,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
 
   // ---- SQL-консоль (чтение + запись) ----
   app.post('/admin/sql', async (req, reply) => {
-    const user = requireAdmin(req, reply)
+    const user = requireSuperAdmin(req, reply)
     if (!user) return
     const parsed = sqlBody.safeParse(req.body)
     if (!parsed.success) return reply.code(400).send({ code: 'VALIDATION_ERROR', details: parsed.error.flatten() })
@@ -417,7 +407,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   })
 
   app.patch('/admin/users/:id', async (req, reply) => {
-    const admin = requireAdmin(req, reply)
+    const admin = requireSuperAdmin(req, reply)
     if (!admin) return
     const id = paramId(req)
     const parsed = userPatch.safeParse(req.body)
@@ -432,7 +422,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   })
 
   app.delete('/admin/users/:id', async (req, reply) => {
-    const admin = requireAdmin(req, reply)
+    const admin = requireSuperAdmin(req, reply)
     if (!admin) return
     const id = paramId(req)
     if (id === admin.id) return reply.code(400).send({ code: 'SELF_DELETE', message: 'Нельзя удалить свой аккаунт' })
@@ -460,7 +450,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   })
 
   app.patch('/admin/tournaments/:id', async (req, reply) => {
-    const admin = requireAdmin(req, reply)
+    const admin = requireSuperAdmin(req, reply)
     if (!admin) return
     const id = paramId(req)
     const parsed = tournamentPatch.safeParse(req.body)
@@ -475,7 +465,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   })
 
   app.delete('/admin/tournaments/:id', async (req, reply) => {
-    const admin = requireAdmin(req, reply)
+    const admin = requireSuperAdmin(req, reply)
     if (!admin) return
     const id = paramId(req)
     const count = await exec(`DELETE FROM tournament."Tournament" WHERE id = $1`, id)
@@ -497,7 +487,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   })
 
   app.patch('/admin/payments/:id', async (req, reply) => {
-    const admin = requireAdmin(req, reply)
+    const admin = requireSuperAdmin(req, reply)
     if (!admin) return
     const id = paramId(req)
     const parsed = paymentPatch.safeParse(req.body)
@@ -512,7 +502,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   })
 
   app.delete('/admin/payments/:id', async (req, reply) => {
-    const admin = requireAdmin(req, reply)
+    const admin = requireSuperAdmin(req, reply)
     if (!admin) return
     const id = paramId(req)
     // Сначала удаляем связанную подписку (FK), затем платёж — в одной транзакции.
@@ -567,13 +557,95 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
 
   // ---- Ручная очистка аудита ----
   app.post('/admin/activity/purge', async (req, reply) => {
-    const admin = requireAdmin(req, reply)
+    const admin = requireSuperAdmin(req, reply)
     if (!admin) return
     const res = await prisma.activityLog.deleteMany({
       where: { createdAt: { lt: new Date(Date.now() - env.ACTIVITY_RETENTION_DAYS * 24 * 60 * 60 * 1000) } },
     })
     await logAction(admin, 'POST', '/admin/activity/purge', req.ip)
     return { deleted: res.count, retentionDays: env.ACTIVITY_RETENTION_DAYS }
+  })
+
+  // ---- Дамп всей БД (JSON) ----
+  app.get('/admin/export', async (req, reply) => {
+    const admin = requireSuperAdmin(req, reply)
+    if (!admin) return
+    const dump = await exportDatabase()
+    await logAction(admin, 'GET', '/admin/export', req.ip)
+    void reply.header('Content-Disposition', `attachment; filename="billiard-dump-${new Date().toISOString().slice(0, 10)}.json"`)
+    return dump
+  })
+
+  // ---- Настоящий бэкап (pg_dump → .sql, стримом) ----
+  app.get('/admin/backup', async (req, reply) => {
+    const admin = requireSuperAdmin(req, reply)
+    if (!admin) return
+    const child = spawnPgDump()
+
+    // Если бинарник не найден / упал на старте — ответим JSON-ошибкой.
+    const spawnErr = await new Promise<Error | null>((resolve) => {
+      const ok = () => resolve(null)
+      const err = (e: Error) => resolve(e)
+      child.once('spawn', ok)
+      child.once('error', err)
+      setTimeout(() => resolve(null), 200) // если за 200мс не упал — считаем, что стартанул
+    })
+    if (spawnErr) {
+      return reply.code(500).send({ code: 'PG_DUMP_UNAVAILABLE', message: `pg_dump не найден: ${spawnErr.message}` })
+    }
+
+    child.stderr.on('data', (chunk: Buffer) => {
+      req.log.warn({ pg_dump: chunk.toString().slice(0, 200) })
+    })
+    child.on('close', (code) => {
+      if (code !== 0) req.log.warn({ code }, 'pg_dump exited with non-zero (response may be truncated)')
+    })
+
+    await logAction(admin, 'GET', '/admin/backup', req.ip)
+    void reply.header('Content-Type', 'application/sql; charset=utf-8')
+    void reply.header('Content-Disposition', `attachment; filename="billiard-${new Date().toISOString().slice(0, 10)}.sql"`)
+    return reply.send(child.stdout)
+  })
+
+  // ---- Список файловых бэкапов (фоновых + ручных) ----
+  app.get('/admin/backups', async (req, reply) => {
+    if (!requireSuperAdmin(req, reply)) return
+    return {
+      files: listBackups(),
+      intervalHours: env.BACKUP_INTERVAL_HOURS,
+      retentionDays: env.BACKUP_RETENTION_DAYS,
+    }
+  })
+
+  // ---- Запустить бэкап в файл вручную ----
+  app.post('/admin/backups', async (req, reply) => {
+    const admin = requireSuperAdmin(req, reply)
+    if (!admin) return
+    await logAction(admin, 'POST', '/admin/backups', req.ip)
+    const result = await runBackupToFile(req.log)
+    if (!result) return reply.code(500).send({ code: 'BACKUP_FAILED', message: 'pg_dump не отработал (см. логи сервиса)' })
+    return result
+  })
+
+  // ---- Скачать конкретный файл бэкапа ----
+  app.get('/admin/backups/:name', async (req, reply) => {
+    const admin = requireSuperAdmin(req, reply)
+    if (!admin) return
+    const name = (req.params as { name: string }).name
+    const filePath = backupFilePath(name)
+    if (!filePath) return reply.code(400).send({ code: 'BAD_NAME' })
+    if (!existsSync(filePath)) return reply.code(404).send({ code: 'NOT_FOUND' })
+    await logAction(admin, 'GET', `/admin/backups/${name}`, req.ip)
+    void reply.header('Content-Type', name.endsWith('.gz') ? 'application/gzip' : 'application/sql')
+    void reply.header('Content-Disposition', `attachment; filename="${name}"`)
+    return reply.send(openBackupForRead(filePath))
+  })
+
+  // ---- История латентности сервисов (для графиков) ----
+  app.get('/admin/health/history', async (req, reply) => {
+    if (!requireAdmin(req, reply)) return
+    const minutes = Math.min(Math.max(Number((req.query as { minutes?: string }).minutes) || 60, 5), 1440)
+    return { series: await healthHistory(minutes) }
   })
 
   // ============ INTERNAL (service-to-service, x-internal-secret) ============

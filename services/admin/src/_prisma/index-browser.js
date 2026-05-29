@@ -135,6 +135,15 @@ exports.Prisma.ActivityLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ServiceHealthSampleScalarFieldEnum = {
+  id: 'id',
+  service: 'service',
+  ok: 'ok',
+  status: 'status',
+  latencyMs: 'latencyMs',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AlertLogScalarFieldEnum = {
   id: 'id',
   level: 'level',
@@ -175,6 +184,7 @@ exports.Prisma.JsonNullValueFilter = {
 
 exports.Prisma.ModelName = {
   ActivityLog: 'ActivityLog',
+  ServiceHealthSample: 'ServiceHealthSample',
   AlertLog: 'AlertLog'
 };
 

@@ -1,4 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
+import { isSuperAdmin } from './config.js'
 
 export interface AuthContext {
   id: string
@@ -35,6 +36,20 @@ export function requireAdmin(req: FastifyRequest, reply: FastifyReply): AuthCont
   }
   if (user.role !== 'ADMIN') {
     void reply.code(403).send({ code: 'FORBIDDEN', message: 'Только для администратора' })
+    return null
+  }
+  return user
+}
+
+/**
+ * Гард для опасных операций (SQL-запись, удаление, дамп БД, очистка аудита):
+ * пускает только супер-админов (см. ADMIN_SUPERUSER_IDS).
+ */
+export function requireSuperAdmin(req: FastifyRequest, reply: FastifyReply): AuthContext | null {
+  const user = requireAdmin(req, reply)
+  if (!user) return null
+  if (!isSuperAdmin(user.id)) {
+    void reply.code(403).send({ code: 'FORBIDDEN_READONLY', message: 'Недостаточно прав: только просмотр' })
     return null
   }
   return user

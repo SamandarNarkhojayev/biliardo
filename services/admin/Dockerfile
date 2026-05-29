@@ -6,7 +6,7 @@ COPY package.json package-lock.json* ./
 COPY packages/shared ./packages/shared
 COPY services/admin ./services/admin
 
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl postgresql-client
 
 RUN npm ci --workspaces --include-workspace-root
 
