@@ -8,7 +8,7 @@ COPY services/admin ./services/admin
 
 RUN apk add --no-cache openssl postgresql-client
 
-RUN npm ci --workspaces --include-workspace-root
+RUN npm ci --workspaces --include-workspace-root --include=dev
 
 # Сгенерировать Prisma client (в src/_prisma согласно schema.prisma).
 RUN npm --workspace @billiard/admin run generate

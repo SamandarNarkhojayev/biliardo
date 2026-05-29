@@ -8,7 +8,7 @@ COPY services/club ./services/club
 
 RUN apk add --no-cache openssl
 
-RUN npm ci --workspaces --include-workspace-root
+RUN npm ci --workspaces --include-workspace-root --include=dev
 
 RUN npm --workspace @billiard/club run generate
 

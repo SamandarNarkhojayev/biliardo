@@ -6,7 +6,7 @@ COPY package.json package-lock.json* ./
 COPY packages/shared ./packages/shared
 COPY services/gateway ./services/gateway
 
-RUN npm ci --workspaces --include-workspace-root
+RUN npm ci --workspaces --include-workspace-root --include=dev
 
 EXPOSE 3000
 CMD ["npm", "--workspace", "@billiard/gateway", "run", "start"]

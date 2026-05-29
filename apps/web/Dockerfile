@@ -17,7 +17,7 @@ COPY package.json package-lock.json* ./
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
 
-RUN npm ci --workspaces --include-workspace-root
+RUN npm ci --workspaces --include-workspace-root --include=dev
 RUN npm --workspace @billiard/web run build
 
 # ---- Stage 2: nginx ----

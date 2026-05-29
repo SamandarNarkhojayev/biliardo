@@ -10,7 +10,7 @@ COPY services/auth ./services/auth
 # OpenSSL для prisma engine
 RUN apk add --no-cache openssl
 
-RUN npm ci --workspaces --include-workspace-root
+RUN npm ci --workspaces --include-workspace-root --include=dev
 
 # Prisma generate
 RUN npm --workspace @billiard/auth run generate
