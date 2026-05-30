@@ -70,6 +70,7 @@ services:
       context: .
       dockerfile: services/auth/Dockerfile
     container_name: billiard-auth
+    command: ["sh", "-c", "npm --workspace @billiard/auth run migrate && npm --workspace @billiard/auth run start"]
     environment:
       NODE_ENV: production
       PORT: 3001
@@ -116,6 +117,7 @@ services:
       context: .
       dockerfile: services/payment/Dockerfile
     container_name: billiard-payment
+    command: ["sh", "-c", "npm --workspace @billiard/payment run migrate && npm --workspace @billiard/payment run start"]
     environment:
       NODE_ENV: production
       PORT: 3003
@@ -168,6 +170,7 @@ services:
       context: .
       dockerfile: services/club/Dockerfile
     container_name: billiard-club
+    command: ["sh", "-c", "npm --workspace @billiard/club run migrate && npm --workspace @billiard/club run start"]
     environment:
       NODE_ENV: production
       PORT: 3004
@@ -200,6 +203,7 @@ services:
       context: .
       dockerfile: services/tournament/Dockerfile
     container_name: billiard-tournament
+    command: ["sh", "-c", "npm --workspace @billiard/tournament run migrate && npm --workspace @billiard/tournament run start"]
     environment:
       NODE_ENV: production
       PORT: 3002
@@ -265,7 +269,6 @@ services:
       context: .
       dockerfile: services/admin/Dockerfile
     container_name: billiard-admin
-    # Образ admin не мигрирует на старте сам (в отличие от tournament) — делаем это здесь.
     command: ["sh", "-c", "npm --workspace @billiard/admin run migrate && npm --workspace @billiard/admin run start"]
     environment:
       NODE_ENV: production
