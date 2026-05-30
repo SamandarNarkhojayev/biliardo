@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import {
   Activity, Database, Users, Trophy, CreditCard, Building2,
-  Server, Terminal, RefreshCw, Bell, ShieldAlert, Download, Trash2,
+  Server, Terminal, RefreshCw, Bell, ShieldAlert, Download, Trash2, Ban,
 } from 'lucide-react'
 import type { AdminOverview, AdminHealth, AdminSqlResult, ActivityLogDto, ActivitySessionDto } from '@billiard/shared'
 import { Container } from '@/components/ui/Container'
@@ -25,7 +25,7 @@ import {
   UserDetailModal, TournamentDetailModal, PaymentDetailModal, ClubDetailModal,
 } from '@/components/admin/modals'
 
-type Tab = 'overview' | 'users' | 'tournaments' | 'payments' | 'clubs' | 'activity' | 'server' | 'sql'
+type Tab = 'overview' | 'users' | 'tournaments' | 'payments' | 'clubs' | 'activity' | 'bans' | 'server' | 'sql'
 
 const TABS: { key: Tab; label: string; icon: typeof Activity }[] = [
   { key: 'overview', label: 'Обзор', icon: Activity },
@@ -34,6 +34,7 @@ const TABS: { key: Tab; label: string; icon: typeof Activity }[] = [
   { key: 'payments', label: 'Платежи', icon: CreditCard },
   { key: 'clubs', label: 'Клубы', icon: Building2 },
   { key: 'activity', label: 'Активность', icon: Activity },
+  { key: 'bans', label: 'IP-баны', icon: Ban },
   { key: 'server', label: 'Сервер / БД', icon: Server },
   { key: 'sql', label: 'SQL-консоль', icon: Terminal },
 ]
@@ -96,6 +97,7 @@ export default function Admin() {
           {activeTab === 'payments' && <PaymentsTab />}
           {activeTab === 'clubs' && <ClubsTab />}
           {activeTab === 'activity' && <ActivityTab />}
+          {activeTab === 'bans' && <BansTab />}
           {activeTab === 'server' && <ServerTab />}
           {activeTab === 'sql' && <SqlTab />}
         </Container>
@@ -444,6 +446,115 @@ function SqlTab() {
           }))}
         />
       )}
+    </div>
+  )
+}
+
+function BansTab() {
+  const { isSuper } = useAdminCaps()
+  const [version, setVersion] = useState(0)
+  const { data, loading, error } = useAsync(() => adminApi.listIpBans(), [version])
+  const [ip, setIp] = useState('')
+  const [reason, setReason] = useState('')
+  const [until, setUntil] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  async function add() {
+    if (!ip.trim()) return
+    setBusy(true)
+    try {
+      await adminApi.createIpBan({
+        ip: ip.trim(),
+        reason: reason.trim() || undefined,
+        until: until ? new Date(until).toISOString() : null,
+      })
+      setIp(''); setReason(''); setUntil('')
+      setVersion((v) => v + 1)
+      toast.success('IP забанен')
+    } catch (e) {
+      toast.error(e instanceof ApiException ? e.message : 'Не удалось добавить бан')
+    } finally { setBusy(false) }
+  }
+
+  async function unban(id: string) {
+    if (!confirm('Снять бан?')) return
+    try {
+      await adminApi.deleteIpBan(id)
+      setVersion((v) => v + 1)
+      toast.success('Бан снят')
+    } catch (e) {
+      toast.error(e instanceof ApiException ? e.message : 'Не удалось снять бан')
+    }
+  }
+
+  if (loading) return <Loading />
+  if (error) return <ErrorBox msg={error} />
+  const bans = data?.bans ?? []
+
+  return (
+    <div className="space-y-4">
+      <Panel>
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-text-primary">
+          <Ban size={16} /> Добавить IP-бан
+        </div>
+        {!isSuper && (
+          <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+            Только супер-админ может изменять бан-лист. У вас режим просмотра.
+          </div>
+        )}
+        <div className="grid gap-3 sm:grid-cols-[1fr_2fr_1fr_auto]">
+          <input
+            value={ip}
+            onChange={(e) => setIp(e.target.value)}
+            placeholder="IP, напр. 1.2.3.4"
+            disabled={!isSuper || busy}
+            className="ring-focus rounded-xl border border-[var(--line-strong)] bg-[var(--surface-input)] px-3 py-2 font-mono text-sm text-text-primary"
+          />
+          <input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Причина (опционально)"
+            disabled={!isSuper || busy}
+            className="ring-focus rounded-xl border border-[var(--line-strong)] bg-[var(--surface-input)] px-3 py-2 text-sm text-text-primary"
+          />
+          <input
+            type="datetime-local"
+            value={until}
+            onChange={(e) => setUntil(e.target.value)}
+            disabled={!isSuper || busy}
+            title="Когда снять (пусто = бессрочно)"
+            className="ring-focus rounded-xl border border-[var(--line-strong)] bg-[var(--surface-input)] px-3 py-2 text-sm text-text-primary"
+          />
+          <Button variant="primary" size="md" loading={busy} disabled={!isSuper || !ip.trim()} onClick={() => void add()}>
+            Забанить
+          </Button>
+        </div>
+        <p className="mt-2 text-xs text-text-muted">
+          Gateway синкается с базой раз в минуту, поэтому бан вступит в силу в течение ~60 сек.
+        </p>
+      </Panel>
+
+      <Panel>
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-text-primary">
+          <Ban size={16} /> Активные баны ({bans.length})
+        </div>
+        {bans.length === 0 ? (
+          <p className="text-sm text-text-muted">Бан-лист пуст.</p>
+        ) : (
+          <Table
+            columns={['IP', 'Причина', 'До', 'Добавлен', '']}
+            rows={bans.map((b) => [
+              <span className="font-mono text-sm">{b.ip}</span>,
+              b.reason ?? <span className="text-text-muted">—</span>,
+              b.until ? fmtDate(b.until) : <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-xs text-amber-300">бессрочно</span>,
+              fmtDate(b.createdAt),
+              <Button size="sm" variant="ghost" leftIcon={<Trash2 size={13} />} disabled={!isSuper} onClick={() => void unban(b.id)}>
+                Снять
+              </Button>,
+            ])}
+          />
+        )}
+      </Panel>
     </div>
   )
 }

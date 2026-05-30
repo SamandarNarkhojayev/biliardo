@@ -71,6 +71,40 @@ async function postAlert(payload: AlertPayload): Promise<void> {
   } catch { /* admin offline */ }
 }
 
+// IP-баны. Source of truth — admin.ip_ban; здесь in-memory копия, синкаем раз в минуту.
+// Значение Map: null = бессрочно, number = epoch ms когда бан истекает.
+// Fail-open: если admin не отвечает — никого не банить (лучше пропустить плохого, чем заблокировать всех).
+const ipBans = new Map<string, number | null>()
+const IP_BAN_SYNC_INTERVAL_MS = 60_000
+
+async function refreshIpBans(log: { warn: (...a: unknown[]) => void }): Promise<void> {
+  try {
+    const res = await fetch(`${env.ADMIN_SERVICE_URL.replace(/\/$/, '')}/internal/ipbans`, {
+      headers: { 'x-internal-secret': env.INTERNAL_SECRET },
+    })
+    if (!res.ok) {
+      log.warn({ status: res.status }, 'ipban sync: non-200')
+      return
+    }
+    const data = (await res.json()) as { bans: Array<{ ip: string; until: string | null }> }
+    const next = new Map<string, number | null>()
+    for (const b of data.bans) {
+      next.set(b.ip, b.until ? Date.parse(b.until) : null)
+    }
+    ipBans.clear()
+    for (const [ip, until] of next) ipBans.set(ip, until)
+  } catch (err) {
+    log.warn({ err }, 'ipban sync failed (fail-open)')
+  }
+}
+
+function isBanned(ip: string): boolean {
+  const v = ipBans.get(ip)
+  if (v === undefined) return false
+  if (v === null) return true
+  return v > Date.now()
+}
+
 async function main(): Promise<void> {
   const app = Fastify({
     logger: {
@@ -129,6 +163,15 @@ async function main(): Promise<void> {
       return `${req.ip}|${req.method}|${url}`
     },
     skipOnError: false,
+  })
+
+  // IP-бан (первая линия): забаненный IP получает 403 ещё до санитарии заголовков
+  // и до JWT-проверки. Бан-лист пуллится из admin раз в минуту (см. refreshIpBans).
+  app.addHook('onRequest', async (req, reply) => {
+    if (req.url === '/api/health') return // health-probe оставляем доступным
+    if (isBanned(req.ip)) {
+      return reply.code(403).send({ code: 'IP_BANNED', message: 'Доступ заблокирован' })
+    }
   })
 
   // Спуфинг x-user-* / x-internal-secret снаружи запрещён всегда — иначе клиент
@@ -264,8 +307,13 @@ async function main(): Promise<void> {
 
   await warmupPublicKey()
 
+  // Первая загрузка IP-банов + фоновый ресинк раз в минуту.
+  await refreshIpBans(app.log)
+  const ipBanTimer = setInterval(() => void refreshIpBans(app.log), IP_BAN_SYNC_INTERVAL_MS)
+
   const shutdown = async (sig: string) => {
     app.log.info({ sig }, 'shutting down…')
+    clearInterval(ipBanTimer)
     await app.close()
     redis.disconnect()
     process.exit(0)

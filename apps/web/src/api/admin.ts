@@ -202,4 +202,19 @@ export const adminApi = {
   triggerBackup: () => api.post<BackupFile>('/admin/backups'),
   /** Скачать конкретный файл бэкапа. */
   downloadBackupFile: (name: string) => downloadFile(`/admin/backups/${encodeURIComponent(name)}`, name),
+
+  // ---- IP-баны ----
+  listIpBans: () => api.get<{ bans: IpBanRow[] }>('/admin/ipbans'),
+  createIpBan: (body: { ip: string; reason?: string; until?: string | null }) =>
+    api.post<{ ban: IpBanRow }>('/admin/ipbans', body),
+  deleteIpBan: (id: string) => api.delete<void>(`/admin/ipbans/${id}`),
+}
+
+export interface IpBanRow {
+  id: string
+  ip: string
+  reason: string | null
+  until: string | null
+  createdBy: string
+  createdAt: string
 }

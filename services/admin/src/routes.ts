@@ -99,6 +99,15 @@ const tournamentPatch = z.object({
 const paymentPatch = z.object({
   status: z.enum(['PENDING', 'COMPLETED', 'FAILED', 'EXPIRED', 'REFUNDED']),
 })
+
+// IPv4 (xxx.xxx.xxx.xxx) или IPv6 (упрощённая проверка: hex+двоеточия). Длина <=45.
+const ipPattern = /^(?:\d{1,3}\.){3}\d{1,3}$|^[0-9a-fA-F:]+$/
+const ipBanCreate = z.object({
+  ip: z.string().trim().min(3).max(45).regex(ipPattern, 'Неверный формат IP'),
+  reason: z.string().trim().max(500).optional(),
+  // null/undefined = бессрочно
+  until: z.string().datetime().nullable().optional(),
+})
 const metricsQuery = z.object({ days: z.coerce.number().int().min(1).max(365).default(30) })
 
 /** Пишет действие админа в аудит (отдельно от gateway-аудита). */
@@ -230,7 +239,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
         p."tournamentId", p."externalId", p."createdAt", p."completedAt"
       FROM payment."Payment" p
       LEFT JOIN auth."User" u ON u.id = p."userId"
-      WHERE ($1 = '' OR u.name ILIKE '%' || $1 || '%' OR p."planCode" ILIKE '%' || $1 || '%' OR p.status ILIKE '%' || $1 || '%')
+      WHERE ($1 = '' OR u.name ILIKE '%' || $1 || '%' OR p."planCode" ILIKE '%' || $1 || '%' OR p.status::text ILIKE '%' || $1 || '%')
       ORDER BY p."createdAt" DESC
       LIMIT $2 OFFSET $3`,
       search, limit, offset,
@@ -648,6 +657,41 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     return { series: await healthHistory(minutes) }
   })
 
+  // ---- IP-баны ----
+  // Источник истины — таблица admin.ip_ban. Gateway держит in-memory копию,
+  // ресинкается раз в минуту через /internal/ipbans.
+  app.get('/admin/ipbans', async (req, reply) => {
+    if (!requireAdmin(req, reply)) return
+    const bans = await prisma.ipBan.findMany({ orderBy: { createdAt: 'desc' }, take: 500 })
+    return { bans }
+  })
+
+  app.post('/admin/ipbans', async (req, reply) => {
+    const admin = requireSuperAdmin(req, reply)
+    if (!admin) return
+    const parsed = ipBanCreate.safeParse(req.body)
+    if (!parsed.success) return reply.code(400).send({ code: 'VALIDATION_ERROR', details: parsed.error.flatten() })
+    const { ip, reason, until } = parsed.data
+    const ban = await prisma.ipBan.upsert({
+      where: { ip },
+      create: { ip, reason: reason ?? null, until: until ? new Date(until) : null, createdBy: admin.id },
+      update: { reason: reason ?? null, until: until ? new Date(until) : null, createdBy: admin.id },
+    })
+    await logAction(admin, 'POST', `/admin/ipbans (${ip})`, req.ip)
+    return { ban }
+  })
+
+  app.delete('/admin/ipbans/:id', async (req, reply) => {
+    const admin = requireSuperAdmin(req, reply)
+    if (!admin) return
+    const id = paramId(req)
+    const ban = await prisma.ipBan.findUnique({ where: { id } })
+    if (!ban) return reply.code(404).send({ code: 'NOT_FOUND' })
+    await prisma.ipBan.delete({ where: { id } })
+    await logAction(admin, 'DELETE', `/admin/ipbans/${ban.ip}`, req.ip)
+    return reply.code(204).send()
+  })
+
   // ============ INTERNAL (service-to-service, x-internal-secret) ============
 
   // Приём аудита от gateway.
@@ -683,5 +727,19 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     if (!parsed.success) return reply.code(400).send({ code: 'VALIDATION_ERROR', details: parsed.error.flatten() })
     const res = await notifyAdmins(parsed.data, req.log)
     return reply.send(res)
+  })
+
+  // Sync для gateway: отдаём только активные баны (until == null или until > now).
+  // Gateway pull-ит каждые 60 сек и держит in-memory копию.
+  app.get('/internal/ipbans', async (req: FastifyRequest, reply) => {
+    if (!safeEqualInternalSecret(req.headers['x-internal-secret'])) {
+      return reply.code(401).send({ code: 'INVALID_INTERNAL_SECRET' })
+    }
+    const now = new Date()
+    const rows = await prisma.ipBan.findMany({
+      where: { OR: [{ until: null }, { until: { gt: now } }] },
+      select: { ip: true, until: true },
+    })
+    return { bans: rows.map((r) => ({ ip: r.ip, until: r.until?.toISOString() ?? null })) }
   })
 }
