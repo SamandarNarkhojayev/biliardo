@@ -132,7 +132,8 @@ services:
       KASPI_MERCHANT_ID: ${KASPI_MERCHANT_ID:-}
       KASPI_API_KEY: ${KASPI_API_KEY:-}
       KASPI_WEBHOOK_SECRET: ${KASPI_WEBHOOK_SECRET:-}
-      KASPI_BASE_DOMAIN: ${KASPI_BASE_DOMAIN:-}
+      # zod на стороне payment требует URL — даём валидный test-эндпоинт как дефолт
+      KASPI_BASE_DOMAIN: ${KASPI_BASE_DOMAIN:-https://mtokentest.kaspi.kz}
       KASPI_SCHEME: ${KASPI_SCHEME:-r3}
       KASPI_DEVICE_TOKEN: ${KASPI_DEVICE_TOKEN:-}
       KASPI_ORGANIZATION_BIN: ${KASPI_ORGANIZATION_BIN:-}
