@@ -21,6 +21,7 @@ const PaymentCheckout = lazy(() => import('@/pages/PaymentCheckout'))
 const PaymentReturn = lazy(() => import('@/pages/PaymentReturn'))
 const ClubDashboardLayout = lazy(() => import('@/pages/club/ClubDashboardLayout'))
 const ClubTables = lazy(() => import('@/pages/club/ClubTables'))
+const ClubBar = lazy(() => import('@/pages/club/ClubBar'))
 const ClubReports = lazy(() => import('@/pages/club/ClubReports'))
 const ClubSettings = lazy(() => import('@/pages/club/ClubSettings'))
 const Placeholder = lazy(() => import('@/pages/Placeholder'))
@@ -31,6 +32,7 @@ const Terms = lazy(() => import('@/pages/Terms'))
 const Privacy = lazy(() => import('@/pages/Privacy'))
 const Blog = lazy(() => import('@/pages/Blog'))
 const TournamentGuide = lazy(() => import('@/pages/TournamentGuide'))
+const BracketBuilder = lazy(() => import('@/pages/BracketBuilder'))
 const Admin = lazy(() => import('@/pages/Admin'))
 
 const pageVariants = {
@@ -101,6 +103,7 @@ export default function App() {
             >
               <Route index element={<ClubTables />} />
               <Route path="tables" element={<ClubTables />} />
+              <Route path="bar" element={<ClubBar />} />
               <Route path="reports" element={<ClubReports />} />
               <Route path="settings" element={<ClubSettings />} />
             </Route>
@@ -111,6 +114,7 @@ export default function App() {
             <Route path="/privacy" element={<PageWrap><Privacy /></PageWrap>} />
             <Route path="/blog" element={<PageWrap><Blog /></PageWrap>} />
             <Route path="/tournament-guide" element={<PageWrap><TournamentGuide /></PageWrap>} />
+            <Route path="/turnirnaya-setka" element={<PageWrap><BracketBuilder /></PageWrap>} />
             <Route
               path="/admin"
               element={<PageWrap><ProtectedRoute><Admin /></ProtectedRoute></PageWrap>}
