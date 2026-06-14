@@ -190,6 +190,20 @@ export interface TableSession {
   mode: SessionMode
   /** Минуты, null если не задано (для unlimited). */
   plannedDuration: number | null
+  /** Название тарифа (если запущен по тарифу) — для отображения. Optional для обратной совместимости. */
+  tariffName?: string | null
+  /** Текущая стоимость стола ₸, посчитана на десктопе на момент sync. */
+  currentTableCost?: number
+  /** Стоимость бара, добавленного к сессии. */
+  currentBarCost?: number
+}
+
+export interface TableReservation {
+  customerName?: string | null
+  customerPhone?: string | null
+  /** Unix ms — на какое время бронь. */
+  reservedFor?: number
+  notes?: string | null
 }
 
 export interface TableSnapshot {
@@ -199,6 +213,10 @@ export interface TableSnapshot {
   lightOn: boolean
   /** null если стол free / reserved / maintenance */
   session: TableSession | null
+  /** Тариф ₸/час — для отображения в карточке стола. Optional для обратной совместимости. */
+  pricePerHour?: number
+  /** Детали брони, если status='reserved'. */
+  reservation?: TableReservation | null
 }
 
 export interface ClubRevenue {
@@ -219,11 +237,19 @@ export interface ClubStatusSnapshot {
   todayRevenue: ClubRevenue
 }
 
+export interface ClubBarOrderItemDto {
+  menuItemName: string
+  quantity: number
+  price: number
+}
+
 export interface ClubSessionRecordDto {
   id: string
   tableId: number
   tableName: string
   mode: SessionMode
+  /** Название тарифа (если запущен по тарифу). Optional для обратной совместимости. */
+  tariffName?: string | null
   startTime: string
   endTime: string
   /** Минуты */
@@ -231,8 +257,32 @@ export interface ClubSessionRecordDto {
   tableCost: number
   barCost: number
   totalCost: number
+  /** Детализация бара (если десктоп прислал). */
+  barOrders?: ClubBarOrderItemDto[]
   /** YYYY-MM-DD */
   date: string
+  /** Опциональный externalId смены. */
+  shiftId?: string | null
+}
+
+export interface ClubShiftDto {
+  id: string
+  externalId: string
+  operatorId: string
+  operatorName: string
+  /** ISO datetime */
+  startTime: string
+  /** ISO datetime или null если активна. */
+  endTime: string | null
+  isActive: boolean
+  totalRevenue: number
+  tableRevenue: number
+  barRevenue: number
+  sessionsCount: number
+}
+
+export interface ClubShiftsResponse {
+  shifts: ClubShiftDto[]
 }
 
 export interface ClubSessionsResponse {
@@ -280,7 +330,22 @@ export interface WsTableStartSessionMessage {
   type: 'TABLE_START_SESSION'
   commandId: string
   tableId: number
-  payload?: { mode?: SessionMode }
+  /**
+   * Опциональные параметры запуска: mode + длительность/сумма.
+   * - mode='time'      → hours+minutes (или plannedDurationSeconds)
+   * - mode='amount'    → amount в тенге
+   * - mode='unlimited' → без параметров
+   * Если поле отсутствует — десктоп использует дефолт (mode='unlimited').
+   */
+  payload?: {
+    mode?: SessionMode
+    hours?: number
+    minutes?: number
+    amount?: number
+    plannedDurationSeconds?: number
+    packagePrice?: number
+    tariffName?: string
+  }
 }
 
 export interface WsTableEndSessionMessage {

@@ -176,12 +176,19 @@ async function main(): Promise<void> {
 
   // Спуфинг x-user-* / x-internal-secret снаружи запрещён всегда — иначе клиент
   // мог бы прислать свои заголовки и downstream-сервис принял бы их за auth.
+  // Здесь же снепшотим IP в req.headers, чтобы onResponse мог его прочитать даже
+  // после закрытия сокета (иначе `req.ip` упадёт в proxy-addr с null remoteAddress).
   app.addHook('onRequest', async (req) => {
     delete req.headers['x-user-id']
     delete req.headers['x-user-role']
     delete req.headers['x-user-name']
     delete req.headers['x-user-account-type']
     delete req.headers['x-internal-secret']
+    try {
+      (req as unknown as { _capturedIp?: string })._capturedIp = req.ip
+    } catch {
+      (req as unknown as { _capturedIp?: string })._capturedIp = '0.0.0.0'
+    }
   })
 
   // Auth-middleware: проверяет JWT, прокидывает x-user-* в downstream.
@@ -211,10 +218,13 @@ async function main(): Promise<void> {
 
   // Аудит активности: каждый проксированный запрос пишем в admin-сервис
   // (fire-and-forget). 5xx-ответы дополнительно шлём как алерт.
+  // ВАЖНО: НЕ читаем req.ip здесь — сокет уже может быть закрыт. Берём _capturedIp,
+  // снепшот сделан в onRequest. Иначе proxy-addr падает на null remoteAddress.
   app.addHook('onResponse', async (req, reply) => {
     const path = req.url.split('?')[0]
     if (path === '/api/health' || !path.startsWith('/api/')) return
     const nameHeader = req.headers['x-user-name']
+    const ip = (req as unknown as { _capturedIp?: string })._capturedIp ?? '0.0.0.0'
     void postActivity({
       userId: (req.headers['x-user-id'] as string | undefined) ?? null,
       userName: typeof nameHeader === 'string' ? decodeURIComponent(nameHeader) : null,
@@ -222,7 +232,7 @@ async function main(): Promise<void> {
       method: req.method,
       path,
       statusCode: reply.statusCode,
-      ip: req.ip,
+      ip,
       userAgent: (req.headers['user-agent'] as string | undefined) ?? null,
       durationMs: Math.round(reply.elapsedTime),
     })
@@ -232,7 +242,7 @@ async function main(): Promise<void> {
         source: 'gateway',
         title: `5xx: ${req.method} ${path}`,
         message: `Ответ ${reply.statusCode} за ${Math.round(reply.elapsedTime)}мс`,
-        context: { ip: req.ip, userId: req.headers['x-user-id'] ?? null },
+        context: { ip, userId: req.headers['x-user-id'] ?? null },
       })
     }
   })

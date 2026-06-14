@@ -1,5 +1,7 @@
-import { generateKeyPair, SignJWT, jwtVerify, importPKCS8, importSPKI, type KeyLike } from 'jose'
+import { generateKeyPair, SignJWT, jwtVerify, importPKCS8, importSPKI, exportPKCS8, exportSPKI, type KeyLike } from 'jose'
 import { env } from './config.js'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
 
 /**
  * RS256-based JWT.
@@ -28,13 +30,34 @@ export async function initJwt(): Promise<void> {
     if (env.NODE_ENV === 'production') {
       throw new Error('JWT_PRIVATE_KEY и JWT_PUBLIC_KEY обязательны в production')
     }
-    const pair = await generateKeyPair(ALG, { extractable: true })
-    privateKey = pair.privateKey
-    publicKey = pair.publicKey
-    // Экспортируем PUBLIC для отладки
-    const { exportSPKI } = await import('jose')
-    publicKeyPem = await exportSPKI(publicKey)
-    console.warn('⚠️  Сгенерирована эфемерная RS256 пара (dev only). Все токены инвалидируются при рестарте.')
+    // Dev: кэшируем сгенерированную пару на диск, чтобы рестарт сервиса не
+    // инвалидировал десктопные токены (90-дневный TTL) и выданные refresh-cookies.
+    const cachePath = path.resolve(process.cwd(), '.dev-jwt-keys.json')
+    let loaded = false
+    try {
+      const raw = await fs.readFile(cachePath, 'utf8')
+      const cached = JSON.parse(raw) as { privateKey: string; publicKey: string }
+      privateKey = await importPKCS8(cached.privateKey, ALG)
+      publicKey = await importSPKI(cached.publicKey, ALG)
+      publicKeyPem = cached.publicKey
+      loaded = true
+      console.warn('🔐 RS256 пара загружена из .dev-jwt-keys.json (dev cache). Удалить файл — пересоздать.')
+    } catch {
+      /* нет файла или повреждён — генерим новую */
+    }
+    if (!loaded) {
+      const pair = await generateKeyPair(ALG, { extractable: true })
+      privateKey = pair.privateKey
+      publicKey = pair.publicKey
+      publicKeyPem = await exportSPKI(publicKey)
+      const privPem = await exportPKCS8(privateKey)
+      try {
+        await fs.writeFile(cachePath, JSON.stringify({ privateKey: privPem, publicKey: publicKeyPem }, null, 2), { mode: 0o600 })
+        console.warn('⚠️  Сгенерирована и закэширована новая dev RS256 пара (.dev-jwt-keys.json).')
+      } catch (err) {
+        console.warn('⚠️  Сгенерирована эфемерная dev RS256 пара (не удалось сохранить кэш):', (err as Error).message)
+      }
+    }
   }
 }
 

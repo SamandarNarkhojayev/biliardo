@@ -108,14 +108,34 @@ exports.Prisma.ClubSessionRecordScalarFieldEnum = {
   tableId: 'tableId',
   tableName: 'tableName',
   mode: 'mode',
+  tariffName: 'tariffName',
   startTime: 'startTime',
   endTime: 'endTime',
   duration: 'duration',
   tableCost: 'tableCost',
   barCost: 'barCost',
   totalCost: 'totalCost',
+  barOrders: 'barOrders',
   date: 'date',
+  shiftId: 'shiftId',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.ClubShiftRecordScalarFieldEnum = {
+  id: 'id',
+  clubId: 'clubId',
+  externalId: 'externalId',
+  operatorId: 'operatorId',
+  operatorName: 'operatorName',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  isActive: 'isActive',
+  totalRevenue: 'totalRevenue',
+  tableRevenue: 'tableRevenue',
+  barRevenue: 'barRevenue',
+  sessionsCount: 'sessionsCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -124,6 +144,11 @@ exports.Prisma.SortOrder = {
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
@@ -138,10 +163,16 @@ exports.Prisma.JsonNullValueFilter = {
   AnyNull: Prisma.AnyNull
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
   ClubSyncSnapshot: 'ClubSyncSnapshot',
-  ClubSessionRecord: 'ClubSessionRecord'
+  ClubSessionRecord: 'ClubSessionRecord',
+  ClubShiftRecord: 'ClubShiftRecord'
 };
 /**
  * Create the Client
@@ -182,6 +213,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -190,13 +222,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// Club-сервис: владеет схемой `club`.\n// Хранит снимки состояния клуба (один на клуб, перезаписывается при каждом SYNC)\n// и историю завершённых сессий (idempotent по externalId).\n// userId/clubId — opaque-строки, FK на чужие схемы не используем.\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/_prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n  schemas  = [\"club\"]\n}\n\n/// Последний снимок состояния клуба. Один на клуб, перезаписывается при каждом SYNC.\nmodel ClubSyncSnapshot {\n  id       String   @id @default(cuid())\n  clubId   String   @unique // user.id из auth-схемы (opaque)\n  /// JSON: TableSnapshot[] (см. shared types)\n  tables   Json\n  /// JSON: { table, bar, total, sessionsCount }\n  revenue  Json\n  syncedAt DateTime @default(now())\n\n  @@schema(\"club\")\n}\n\n/// История завершённых сессий, присланных desktop-приложением.\n/// externalId уникален в пределах clubId — повторный sync не дублирует.\nmodel ClubSessionRecord {\n  id         String   @id @default(cuid())\n  clubId     String\n  externalId String\n  tableId    Int\n  tableName  String\n  mode       String\n  startTime  DateTime\n  endTime    DateTime\n  /// Минуты\n  duration   Int\n  /// Тенге\n  tableCost  Int\n  barCost    Int\n  totalCost  Int\n  /// \"YYYY-MM-DD\" — для быстрой группировки в отчётах\n  date       String\n  createdAt  DateTime @default(now())\n\n  @@unique([clubId, externalId])\n  @@index([clubId, date])\n  @@index([clubId, startTime])\n  @@schema(\"club\")\n}\n",
-  "inlineSchemaHash": "d4f893d74dd14cafff808f8828989048dfb63e4e8f14cf6b9760b1424c038921",
+  "inlineSchema": "// Club-сервис: владеет схемой `club`.\n// Хранит снимки состояния клуба (один на клуб, перезаписывается при каждом SYNC)\n// и историю завершённых сессий (idempotent по externalId).\n// userId/clubId — opaque-строки, FK на чужие схемы не используем.\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/_prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n  schemas  = [\"club\"]\n}\n\n/// Последний снимок состояния клуба. Один на клуб, перезаписывается при каждом SYNC.\nmodel ClubSyncSnapshot {\n  id       String   @id @default(cuid())\n  clubId   String   @unique // user.id из auth-схемы (opaque)\n  /// JSON: TableSnapshot[] (см. shared types)\n  tables   Json\n  /// JSON: { table, bar, total, sessionsCount }\n  revenue  Json\n  syncedAt DateTime @default(now())\n\n  @@schema(\"club\")\n}\n\n/// История завершённых сессий, присланных desktop-приложением.\n/// externalId уникален в пределах clubId — повторный sync не дублирует.\nmodel ClubSessionRecord {\n  id         String   @id @default(cuid())\n  clubId     String\n  externalId String\n  tableId    Int\n  tableName  String\n  mode       String\n  /// Название тарифа (если запущен по тарифу) — для отображения в истории.\n  tariffName String?\n  startTime  DateTime\n  endTime    DateTime\n  /// Минуты\n  duration   Int\n  /// Тенге\n  tableCost  Int\n  barCost    Int\n  totalCost  Int\n  /// JSON: BarOrderItem[] — позиции бар-заказов, привязанные к сессии.\n  /// Опционально, поэтому Json? (старые сессии без детализации остаются валидными).\n  barOrders  Json?\n  /// \"YYYY-MM-DD\" — для быстрой группировки в отчётах\n  date       String\n  /// Опционально: id смены, в которой была завершена сессия.\n  shiftId    String?\n  createdAt  DateTime @default(now())\n\n  @@unique([clubId, externalId])\n  @@index([clubId, date])\n  @@index([clubId, startTime])\n  @@index([clubId, shiftId])\n  @@schema(\"club\")\n}\n\n/// История смен, присланных desktop-приложением (когда оператор открывает/закрывает смену).\n/// externalId — id смены из desktop'а; идемпотентность по {clubId, externalId}.\nmodel ClubShiftRecord {\n  id            String    @id @default(cuid())\n  clubId        String\n  externalId    String\n  /// Локальный userId оператора в desktop'е (НЕ auth.User — это внутренняя сущность desktop'а).\n  operatorId    String\n  operatorName  String\n  startTime     DateTime\n  endTime       DateTime?\n  /// true пока смена активна (endTime = null).\n  isActive      Boolean   @default(true)\n  /// Сумма выручки по смене (table + bar), посчитана на десктопе.\n  totalRevenue  Int       @default(0)\n  tableRevenue  Int       @default(0)\n  barRevenue    Int       @default(0)\n  sessionsCount Int       @default(0)\n  createdAt     DateTime  @default(now())\n  updatedAt     DateTime  @updatedAt\n\n  @@unique([clubId, externalId])\n  @@index([clubId, startTime])\n  @@schema(\"club\")\n}\n",
+  "inlineSchemaHash": "68b2b6732d3860f2fa16c84359ee927a2e9b080ac51a6838671bb1c66d8ff6f6",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"ClubSyncSnapshot\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clubId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tables\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"revenue\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"syncedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ClubSessionRecord\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clubId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"externalId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tableId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"tableName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"mode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"duration\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"tableCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"barCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"totalCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"ClubSyncSnapshot\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clubId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tables\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"revenue\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"syncedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ClubSessionRecord\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clubId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"externalId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tableId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"tableName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"mode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tariffName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"duration\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"tableCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"barCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"totalCost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"barOrders\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"shiftId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ClubShiftRecord\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"clubId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"externalId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"operatorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"operatorName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"totalRevenue\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"tableRevenue\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"barRevenue\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"sessionsCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

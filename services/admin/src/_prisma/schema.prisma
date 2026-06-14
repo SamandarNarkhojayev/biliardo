@@ -65,3 +65,18 @@ model AlertLog {
   @@map("alert_log")
   @@schema("admin")
 }
+
+/// Бан IP-адресов. Gateway держит копию в Redis (Hash gw:ipbans) и проверяет на onRequest.
+/// until=null — бессрочный; иначе автоматически истекает по времени (Redis TTL + проверка в gateway).
+model IpBan {
+  id        String    @id @default(cuid())
+  ip        String    @unique
+  reason    String?
+  until     DateTime?
+  createdBy String
+  createdAt DateTime  @default(now())
+
+  @@index([until])
+  @@map("ip_ban")
+  @@schema("admin")
+}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Plus, Cpu, Trophy, UserCircle2 } from 'lucide-react'
+import { Menu, X, Plus, Cpu, Trophy, UserCircle2, LayoutDashboard } from 'lucide-react'
 import { Logo } from './Logo'
 import { ThemeToggle } from './ThemeToggle'
 import { LocaleToggle } from './LocaleToggle'
@@ -214,7 +214,16 @@ export function Navbar() {
             <ThemeToggle />
             {user ? (
               <>
-                {!inWorkspace && (
+                {user.accountType === 'CLUB' && !location.pathname.startsWith('/club/dashboard') && (
+                  <Button
+                    variant="primary" size="sm"
+                    leftIcon={<LayoutDashboard size={16} />}
+                    onClick={() => navigate('/club/dashboard/tables')}
+                  >
+                    Дашборд клуба
+                  </Button>
+                )}
+                {!inWorkspace && user.accountType !== 'CLUB' && (
                   <Button
                     variant="primary" size="sm"
                     leftIcon={<Plus size={16} />}
@@ -346,7 +355,16 @@ export function Navbar() {
               <div className="mt-auto flex flex-col gap-3 pt-8">
                 {user ? (
                   <>
-                    {!inWorkspace && (
+                    {user.accountType === 'CLUB' && !location.pathname.startsWith('/club/dashboard') && (
+                      <Button
+                        variant="primary" size="lg" fullWidth
+                        leftIcon={<LayoutDashboard size={18} />}
+                        onClick={() => { setOpen(false); navigate('/club/dashboard/tables') }}
+                      >
+                        Дашборд клуба
+                      </Button>
+                    )}
+                    {!inWorkspace && user.accountType !== 'CLUB' && (
                       <Button
                         variant="primary" size="lg" fullWidth
                         leftIcon={<Plus size={18} />}

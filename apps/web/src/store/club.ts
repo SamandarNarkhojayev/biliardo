@@ -25,7 +25,13 @@ const RECONNECT_MAX_MS = 60_000
 interface ClubState {
   snapshot: ClubStatusSnapshot | null
   desktopOnline: boolean
+  /** Глобальный счётчик команд в полёте (для общей индикации). */
   pendingCommands: Set<string>
+  /**
+   * Map commandId → tableId. Позволяет UI блокировать кнопки только у того стола,
+   * на который ушла команда, а не у всех сразу. Очищается при ACK/ERROR/watchdog.
+   */
+  pendingByCommand: Map<string, number>
   /** Текущее WS-соединение */
   ws: WebSocket | null
   /** Reconnect attempts (экспоненциальный backoff) */
@@ -35,11 +41,15 @@ interface ClubState {
 
   /** Загрузить snapshot через REST (init) + открыть WS */
   bootstrap: () => Promise<void>
+  /** Перетянуть REST-снимок (для периодического polling без re-open WS). */
+  refresh: () => Promise<void>
   /** Закрыть WS, очистить state */
   teardown: () => void
 
   /** Отправить команду в desktop через WS. Возвращает commandId. */
   sendCommand: (cmd: BrowserCommandInput) => string
+  /** true если на этот стол сейчас летит команда (для disable конкретных кнопок). */
+  isPendingForTable: (tableId: number) => boolean
 }
 
 // Distributive Omit — иначе TS теряет поле `payload` (оно есть только в одной варианте союза).
@@ -47,6 +57,13 @@ type DistOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 type BrowserCommandInput = DistOmit<WsBrowserOutbound, 'commandId'>
 
 let reconnectTimer: number | null = null
+/**
+ * Флаг "мы сами закрываем сокет" — выставляется в teardown() перед ws.close().
+ * Внутри ws.onclose проверяем: если флаг true → НЕ запускаем reconnect-timer,
+ * иначе StrictMode размонтирование/HMR порождает бесконечный цикл
+ * close → reconnect → connect → mount → cleanup → close → ...
+ */
+let closingIntentionally = false
 
 function makeCommandId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
@@ -66,24 +83,46 @@ export const useClubStore = create<ClubState>((set, get) => ({
   snapshot: null,
   desktopOnline: false,
   pendingCommands: new Set(),
+  pendingByCommand: new Map(),
   ws: null,
   retryAttempt: 0,
   reconnecting: false,
 
+  isPendingForTable: (tableId) => {
+    for (const tid of get().pendingByCommand.values()) {
+      if (tid === tableId) return true
+    }
+    return false
+  },
+
   bootstrap: async () => {
     // Загружаем последний снимок через REST — фронт может что-то рендерить даже без WS.
+    if (!useAuthStore.getState().user) return
     try {
       const snap = await clubApi.status()
       set({ snapshot: snap, desktopOnline: snap.isOnline })
     } catch {
       // 401/403/network — пусть UI покажет «не подключено»
     }
-    connect(get, set)
+    // WS подключаем только если осталось залогинены (auth могло истечь после await).
+    if (useAuthStore.getState().user) connect(get, set)
+  },
+
+  refresh: async () => {
+    // Не пытаемся, если уже не залогинены — иначе кругами генерим 401 в консоль.
+    if (!useAuthStore.getState().user) return
+    try {
+      const snap = await clubApi.status()
+      set({ snapshot: snap, desktopOnline: snap.isOnline })
+    } catch {
+      /* offline / 401 — onAuthExpired в auth.ts выкидывает user, ProtectedRoute редиректит */
+    }
   },
 
   teardown: () => {
     const ws = get().ws
     if (ws) {
+      closingIntentionally = true
       try { ws.close(1000, 'teardown') } catch { /* ignore */ }
     }
     if (reconnectTimer !== null) {
@@ -98,7 +137,6 @@ export const useClubStore = create<ClubState>((set, get) => ({
     const commandId = makeCommandId()
     const full = { ...cmd, commandId } as WsBrowserOutbound
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      // Сообщаем UI напрямую — приложение оффлайн / WS закрыт
       return commandId
     }
     try {
@@ -106,7 +144,9 @@ export const useClubStore = create<ClubState>((set, get) => ({
       set((s) => {
         const next = new Set(s.pendingCommands)
         next.add(commandId)
-        return { pendingCommands: next }
+        const byCmd = new Map(s.pendingByCommand)
+        byCmd.set(commandId, cmd.tableId)
+        return { pendingCommands: next, pendingByCommand: byCmd }
       })
       // 10-секундный watchdog: если ACK не пришёл — снимаем pending
       window.setTimeout(() => {
@@ -114,7 +154,9 @@ export const useClubStore = create<ClubState>((set, get) => ({
           if (!s.pendingCommands.has(commandId)) return s
           const next = new Set(s.pendingCommands)
           next.delete(commandId)
-          return { pendingCommands: next }
+          const byCmd = new Map(s.pendingByCommand)
+          byCmd.delete(commandId)
+          return { pendingCommands: next, pendingByCommand: byCmd }
         })
       }, 10_000)
     } catch { /* ignore */ }
@@ -133,9 +175,19 @@ function connect(
 
   const url = `${WS_BASE_URL.replace(/\/$/, '')}/ws/club/${user.id}?token=${encodeURIComponent(token)}`
   const ws = new WebSocket(url)
+  // Перед открытием НОВОГО ws: если у нас уже был "наш" (например, mount-cleanup-mount),
+  // помечаем его как намеренно закрываемый — иначе его поздний onclose запустит лишний reconnect.
+  const prev = get().ws
+  if (prev && prev !== ws) {
+    closingIntentionally = true
+    try { prev.close(1000, 'replaced') } catch { /* ignore */ }
+  }
   set({ ws, reconnecting: false })
 
   ws.onopen = () => {
+    // Гонка: убеждаемся что в store именно мы (а не "победивший" более новый сокет).
+    if (get().ws !== ws) return
+    console.log('[club WS] open ✓')
     set({ retryAttempt: 0 })
   }
 
@@ -162,8 +214,11 @@ function connect(
       set((s) => {
         const next = new Set(s.pendingCommands)
         next.delete(msg.commandId)
+        const byCmd = new Map(s.pendingByCommand)
+        byCmd.delete(msg.commandId)
         return {
           pendingCommands: next,
+          pendingByCommand: byCmd,
           snapshot: updateTablesFromAck(s.snapshot, msg),
         }
       })
@@ -172,22 +227,39 @@ function connect(
     if (msg.type === 'ERROR') {
       if (msg.code === 'DESKTOP_OFFLINE') {
         set({ desktopOnline: false })
-        if (msg.commandId) {
-          set((s) => {
-            const next = new Set(s.pendingCommands)
-            next.delete(msg.commandId!)
-            return { pendingCommands: next }
-          })
-        }
+      }
+      // Любая ошибка с commandId должна разблокировать кнопки — не только OFFLINE.
+      if (msg.commandId) {
+        set((s) => {
+          const next = new Set(s.pendingCommands)
+          next.delete(msg.commandId!)
+          const byCmd = new Map(s.pendingByCommand)
+          byCmd.delete(msg.commandId!)
+          return { pendingCommands: next, pendingByCommand: byCmd }
+        })
       }
       return
     }
   }
 
-  ws.onclose = () => {
+  ws.onclose = (ev) => {
+    const wasIntentional = closingIntentionally
+    const isCurrentWs = get().ws === ws
+    if (isCurrentWs) {
+      closingIntentionally = false
+      set({ ws: null })
+    }
+    if (wasIntentional) {
+      console.log('[club WS] closed (intentional) — skipping reconnect')
+      return
+    }
+    // Если этот сокет — НЕ текущий (его уже заменили в store), не реконнектимся.
+    if (!isCurrentWs) {
+      console.log('[club WS] closed (stale ws) — ignoring')
+      return
+    }
+    console.log('[club WS] closed, code=', ev.code, 'reason=', ev.reason || '(empty)', '→ schedule reconnect')
     const state = get()
-    set({ ws: null })
-    // Авто-reconnect с экспоненциальным backoff
     const attempt = state.retryAttempt + 1
     const delay = Math.min(RECONNECT_BASE_MS * Math.pow(2, attempt - 1), RECONNECT_MAX_MS)
     set({ retryAttempt: attempt, reconnecting: true })

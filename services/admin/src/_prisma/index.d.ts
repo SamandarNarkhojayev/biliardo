@@ -28,6 +28,12 @@ export type ServiceHealthSample = $Result.DefaultSelection<Prisma.$ServiceHealth
  * Журнал алертов (ошибки/аномалии/падения). notified=true когда отправлен в Telegram.
  */
 export type AlertLog = $Result.DefaultSelection<Prisma.$AlertLogPayload>
+/**
+ * Model IpBan
+ * Бан IP-адресов. Gateway держит копию в Redis (Hash gw:ipbans) и проверяет на onRequest.
+ * until=null — бессрочный; иначе автоматически истекает по времени (Redis TTL + проверка в gateway).
+ */
+export type IpBan = $Result.DefaultSelection<Prisma.$IpBanPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -176,6 +182,16 @@ export class PrismaClient<
     * ```
     */
   get alertLog(): Prisma.AlertLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.ipBan`: Exposes CRUD operations for the **IpBan** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more IpBans
+    * const ipBans = await prisma.ipBan.findMany()
+    * ```
+    */
+  get ipBan(): Prisma.IpBanDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -619,7 +635,8 @@ export namespace Prisma {
   export const ModelName: {
     ActivityLog: 'ActivityLog',
     ServiceHealthSample: 'ServiceHealthSample',
-    AlertLog: 'AlertLog'
+    AlertLog: 'AlertLog',
+    IpBan: 'IpBan'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -638,7 +655,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "activityLog" | "serviceHealthSample" | "alertLog"
+      modelProps: "activityLog" | "serviceHealthSample" | "alertLog" | "ipBan"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -864,6 +881,80 @@ export namespace Prisma {
           }
         }
       }
+      IpBan: {
+        payload: Prisma.$IpBanPayload<ExtArgs>
+        fields: Prisma.IpBanFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.IpBanFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.IpBanFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          findFirst: {
+            args: Prisma.IpBanFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.IpBanFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          findMany: {
+            args: Prisma.IpBanFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>[]
+          }
+          create: {
+            args: Prisma.IpBanCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          createMany: {
+            args: Prisma.IpBanCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.IpBanCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>[]
+          }
+          delete: {
+            args: Prisma.IpBanDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          update: {
+            args: Prisma.IpBanUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          deleteMany: {
+            args: Prisma.IpBanDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.IpBanUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.IpBanUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>[]
+          }
+          upsert: {
+            args: Prisma.IpBanUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          aggregate: {
+            args: Prisma.IpBanAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateIpBan>
+          }
+          groupBy: {
+            args: Prisma.IpBanGroupByArgs<ExtArgs>
+            result: $Utils.Optional<IpBanGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.IpBanCountArgs<ExtArgs>
+            result: $Utils.Optional<IpBanCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -963,6 +1054,7 @@ export namespace Prisma {
     activityLog?: ActivityLogOmit
     serviceHealthSample?: ServiceHealthSampleOmit
     alertLog?: AlertLogOmit
+    ipBan?: IpBanOmit
   }
 
   /* Types for Logging */
@@ -4231,6 +4323,1014 @@ export namespace Prisma {
 
 
   /**
+   * Model IpBan
+   */
+
+  export type AggregateIpBan = {
+    _count: IpBanCountAggregateOutputType | null
+    _min: IpBanMinAggregateOutputType | null
+    _max: IpBanMaxAggregateOutputType | null
+  }
+
+  export type IpBanMinAggregateOutputType = {
+    id: string | null
+    ip: string | null
+    reason: string | null
+    until: Date | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type IpBanMaxAggregateOutputType = {
+    id: string | null
+    ip: string | null
+    reason: string | null
+    until: Date | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type IpBanCountAggregateOutputType = {
+    id: number
+    ip: number
+    reason: number
+    until: number
+    createdBy: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type IpBanMinAggregateInputType = {
+    id?: true
+    ip?: true
+    reason?: true
+    until?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type IpBanMaxAggregateInputType = {
+    id?: true
+    ip?: true
+    reason?: true
+    until?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type IpBanCountAggregateInputType = {
+    id?: true
+    ip?: true
+    reason?: true
+    until?: true
+    createdBy?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type IpBanAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IpBan to aggregate.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned IpBans
+    **/
+    _count?: true | IpBanCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: IpBanMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: IpBanMaxAggregateInputType
+  }
+
+  export type GetIpBanAggregateType<T extends IpBanAggregateArgs> = {
+        [P in keyof T & keyof AggregateIpBan]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateIpBan[P]>
+      : GetScalarType<T[P], AggregateIpBan[P]>
+  }
+
+
+
+
+  export type IpBanGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IpBanWhereInput
+    orderBy?: IpBanOrderByWithAggregationInput | IpBanOrderByWithAggregationInput[]
+    by: IpBanScalarFieldEnum[] | IpBanScalarFieldEnum
+    having?: IpBanScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: IpBanCountAggregateInputType | true
+    _min?: IpBanMinAggregateInputType
+    _max?: IpBanMaxAggregateInputType
+  }
+
+  export type IpBanGroupByOutputType = {
+    id: string
+    ip: string
+    reason: string | null
+    until: Date | null
+    createdBy: string
+    createdAt: Date
+    _count: IpBanCountAggregateOutputType | null
+    _min: IpBanMinAggregateOutputType | null
+    _max: IpBanMaxAggregateOutputType | null
+  }
+
+  type GetIpBanGroupByPayload<T extends IpBanGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<IpBanGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof IpBanGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], IpBanGroupByOutputType[P]>
+            : GetScalarType<T[P], IpBanGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type IpBanSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ip?: boolean
+    reason?: boolean
+    until?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["ipBan"]>
+
+  export type IpBanSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ip?: boolean
+    reason?: boolean
+    until?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["ipBan"]>
+
+  export type IpBanSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ip?: boolean
+    reason?: boolean
+    until?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["ipBan"]>
+
+  export type IpBanSelectScalar = {
+    id?: boolean
+    ip?: boolean
+    reason?: boolean
+    until?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }
+
+  export type IpBanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ip" | "reason" | "until" | "createdBy" | "createdAt", ExtArgs["result"]["ipBan"]>
+
+  export type $IpBanPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "IpBan"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      ip: string
+      reason: string | null
+      until: Date | null
+      createdBy: string
+      createdAt: Date
+    }, ExtArgs["result"]["ipBan"]>
+    composites: {}
+  }
+
+  type IpBanGetPayload<S extends boolean | null | undefined | IpBanDefaultArgs> = $Result.GetResult<Prisma.$IpBanPayload, S>
+
+  type IpBanCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<IpBanFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: IpBanCountAggregateInputType | true
+    }
+
+  export interface IpBanDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['IpBan'], meta: { name: 'IpBan' } }
+    /**
+     * Find zero or one IpBan that matches the filter.
+     * @param {IpBanFindUniqueArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends IpBanFindUniqueArgs>(args: SelectSubset<T, IpBanFindUniqueArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one IpBan that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {IpBanFindUniqueOrThrowArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends IpBanFindUniqueOrThrowArgs>(args: SelectSubset<T, IpBanFindUniqueOrThrowArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first IpBan that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanFindFirstArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends IpBanFindFirstArgs>(args?: SelectSubset<T, IpBanFindFirstArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first IpBan that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanFindFirstOrThrowArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends IpBanFindFirstOrThrowArgs>(args?: SelectSubset<T, IpBanFindFirstOrThrowArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more IpBans that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all IpBans
+     * const ipBans = await prisma.ipBan.findMany()
+     * 
+     * // Get first 10 IpBans
+     * const ipBans = await prisma.ipBan.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const ipBanWithIdOnly = await prisma.ipBan.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends IpBanFindManyArgs>(args?: SelectSubset<T, IpBanFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a IpBan.
+     * @param {IpBanCreateArgs} args - Arguments to create a IpBan.
+     * @example
+     * // Create one IpBan
+     * const IpBan = await prisma.ipBan.create({
+     *   data: {
+     *     // ... data to create a IpBan
+     *   }
+     * })
+     * 
+     */
+    create<T extends IpBanCreateArgs>(args: SelectSubset<T, IpBanCreateArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many IpBans.
+     * @param {IpBanCreateManyArgs} args - Arguments to create many IpBans.
+     * @example
+     * // Create many IpBans
+     * const ipBan = await prisma.ipBan.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends IpBanCreateManyArgs>(args?: SelectSubset<T, IpBanCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many IpBans and returns the data saved in the database.
+     * @param {IpBanCreateManyAndReturnArgs} args - Arguments to create many IpBans.
+     * @example
+     * // Create many IpBans
+     * const ipBan = await prisma.ipBan.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many IpBans and only return the `id`
+     * const ipBanWithIdOnly = await prisma.ipBan.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends IpBanCreateManyAndReturnArgs>(args?: SelectSubset<T, IpBanCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a IpBan.
+     * @param {IpBanDeleteArgs} args - Arguments to delete one IpBan.
+     * @example
+     * // Delete one IpBan
+     * const IpBan = await prisma.ipBan.delete({
+     *   where: {
+     *     // ... filter to delete one IpBan
+     *   }
+     * })
+     * 
+     */
+    delete<T extends IpBanDeleteArgs>(args: SelectSubset<T, IpBanDeleteArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one IpBan.
+     * @param {IpBanUpdateArgs} args - Arguments to update one IpBan.
+     * @example
+     * // Update one IpBan
+     * const ipBan = await prisma.ipBan.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends IpBanUpdateArgs>(args: SelectSubset<T, IpBanUpdateArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more IpBans.
+     * @param {IpBanDeleteManyArgs} args - Arguments to filter IpBans to delete.
+     * @example
+     * // Delete a few IpBans
+     * const { count } = await prisma.ipBan.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends IpBanDeleteManyArgs>(args?: SelectSubset<T, IpBanDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IpBans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many IpBans
+     * const ipBan = await prisma.ipBan.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends IpBanUpdateManyArgs>(args: SelectSubset<T, IpBanUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IpBans and returns the data updated in the database.
+     * @param {IpBanUpdateManyAndReturnArgs} args - Arguments to update many IpBans.
+     * @example
+     * // Update many IpBans
+     * const ipBan = await prisma.ipBan.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more IpBans and only return the `id`
+     * const ipBanWithIdOnly = await prisma.ipBan.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends IpBanUpdateManyAndReturnArgs>(args: SelectSubset<T, IpBanUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one IpBan.
+     * @param {IpBanUpsertArgs} args - Arguments to update or create a IpBan.
+     * @example
+     * // Update or create a IpBan
+     * const ipBan = await prisma.ipBan.upsert({
+     *   create: {
+     *     // ... data to create a IpBan
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the IpBan we want to update
+     *   }
+     * })
+     */
+    upsert<T extends IpBanUpsertArgs>(args: SelectSubset<T, IpBanUpsertArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of IpBans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanCountArgs} args - Arguments to filter IpBans to count.
+     * @example
+     * // Count the number of IpBans
+     * const count = await prisma.ipBan.count({
+     *   where: {
+     *     // ... the filter for the IpBans we want to count
+     *   }
+     * })
+    **/
+    count<T extends IpBanCountArgs>(
+      args?: Subset<T, IpBanCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], IpBanCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a IpBan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends IpBanAggregateArgs>(args: Subset<T, IpBanAggregateArgs>): Prisma.PrismaPromise<GetIpBanAggregateType<T>>
+
+    /**
+     * Group by IpBan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends IpBanGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: IpBanGroupByArgs['orderBy'] }
+        : { orderBy?: IpBanGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, IpBanGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetIpBanGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the IpBan model
+   */
+  readonly fields: IpBanFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for IpBan.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__IpBanClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the IpBan model
+   */
+  interface IpBanFieldRefs {
+    readonly id: FieldRef<"IpBan", 'String'>
+    readonly ip: FieldRef<"IpBan", 'String'>
+    readonly reason: FieldRef<"IpBan", 'String'>
+    readonly until: FieldRef<"IpBan", 'DateTime'>
+    readonly createdBy: FieldRef<"IpBan", 'String'>
+    readonly createdAt: FieldRef<"IpBan", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * IpBan findUnique
+   */
+  export type IpBanFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan findUniqueOrThrow
+   */
+  export type IpBanFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan findFirst
+   */
+  export type IpBanFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IpBans.
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IpBans.
+     */
+    distinct?: IpBanScalarFieldEnum | IpBanScalarFieldEnum[]
+  }
+
+  /**
+   * IpBan findFirstOrThrow
+   */
+  export type IpBanFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IpBans.
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IpBans.
+     */
+    distinct?: IpBanScalarFieldEnum | IpBanScalarFieldEnum[]
+  }
+
+  /**
+   * IpBan findMany
+   */
+  export type IpBanFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBans to fetch.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing IpBans.
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    distinct?: IpBanScalarFieldEnum | IpBanScalarFieldEnum[]
+  }
+
+  /**
+   * IpBan create
+   */
+  export type IpBanCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data needed to create a IpBan.
+     */
+    data: XOR<IpBanCreateInput, IpBanUncheckedCreateInput>
+  }
+
+  /**
+   * IpBan createMany
+   */
+  export type IpBanCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many IpBans.
+     */
+    data: IpBanCreateManyInput | IpBanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IpBan createManyAndReturn
+   */
+  export type IpBanCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data used to create many IpBans.
+     */
+    data: IpBanCreateManyInput | IpBanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IpBan update
+   */
+  export type IpBanUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data needed to update a IpBan.
+     */
+    data: XOR<IpBanUpdateInput, IpBanUncheckedUpdateInput>
+    /**
+     * Choose, which IpBan to update.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan updateMany
+   */
+  export type IpBanUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update IpBans.
+     */
+    data: XOR<IpBanUpdateManyMutationInput, IpBanUncheckedUpdateManyInput>
+    /**
+     * Filter which IpBans to update
+     */
+    where?: IpBanWhereInput
+    /**
+     * Limit how many IpBans to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * IpBan updateManyAndReturn
+   */
+  export type IpBanUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data used to update IpBans.
+     */
+    data: XOR<IpBanUpdateManyMutationInput, IpBanUncheckedUpdateManyInput>
+    /**
+     * Filter which IpBans to update
+     */
+    where?: IpBanWhereInput
+    /**
+     * Limit how many IpBans to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * IpBan upsert
+   */
+  export type IpBanUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The filter to search for the IpBan to update in case it exists.
+     */
+    where: IpBanWhereUniqueInput
+    /**
+     * In case the IpBan found by the `where` argument doesn't exist, create a new IpBan with this data.
+     */
+    create: XOR<IpBanCreateInput, IpBanUncheckedCreateInput>
+    /**
+     * In case the IpBan was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<IpBanUpdateInput, IpBanUncheckedUpdateInput>
+  }
+
+  /**
+   * IpBan delete
+   */
+  export type IpBanDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter which IpBan to delete.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan deleteMany
+   */
+  export type IpBanDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IpBans to delete
+     */
+    where?: IpBanWhereInput
+    /**
+     * Limit how many IpBans to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * IpBan without action
+   */
+  export type IpBanDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -4285,6 +5385,18 @@ export namespace Prisma {
   };
 
   export type AlertLogScalarFieldEnum = (typeof AlertLogScalarFieldEnum)[keyof typeof AlertLogScalarFieldEnum]
+
+
+  export const IpBanScalarFieldEnum: {
+    id: 'id',
+    ip: 'ip',
+    reason: 'reason',
+    until: 'until',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt'
+  };
+
+  export type IpBanScalarFieldEnum = (typeof IpBanScalarFieldEnum)[keyof typeof IpBanScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -4623,6 +5735,63 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"AlertLog"> | Date | string
   }
 
+  export type IpBanWhereInput = {
+    AND?: IpBanWhereInput | IpBanWhereInput[]
+    OR?: IpBanWhereInput[]
+    NOT?: IpBanWhereInput | IpBanWhereInput[]
+    id?: StringFilter<"IpBan"> | string
+    ip?: StringFilter<"IpBan"> | string
+    reason?: StringNullableFilter<"IpBan"> | string | null
+    until?: DateTimeNullableFilter<"IpBan"> | Date | string | null
+    createdBy?: StringFilter<"IpBan"> | string
+    createdAt?: DateTimeFilter<"IpBan"> | Date | string
+  }
+
+  export type IpBanOrderByWithRelationInput = {
+    id?: SortOrder
+    ip?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    until?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type IpBanWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    ip?: string
+    AND?: IpBanWhereInput | IpBanWhereInput[]
+    OR?: IpBanWhereInput[]
+    NOT?: IpBanWhereInput | IpBanWhereInput[]
+    reason?: StringNullableFilter<"IpBan"> | string | null
+    until?: DateTimeNullableFilter<"IpBan"> | Date | string | null
+    createdBy?: StringFilter<"IpBan"> | string
+    createdAt?: DateTimeFilter<"IpBan"> | Date | string
+  }, "id" | "ip">
+
+  export type IpBanOrderByWithAggregationInput = {
+    id?: SortOrder
+    ip?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    until?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    _count?: IpBanCountOrderByAggregateInput
+    _max?: IpBanMaxOrderByAggregateInput
+    _min?: IpBanMinOrderByAggregateInput
+  }
+
+  export type IpBanScalarWhereWithAggregatesInput = {
+    AND?: IpBanScalarWhereWithAggregatesInput | IpBanScalarWhereWithAggregatesInput[]
+    OR?: IpBanScalarWhereWithAggregatesInput[]
+    NOT?: IpBanScalarWhereWithAggregatesInput | IpBanScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"IpBan"> | string
+    ip?: StringWithAggregatesFilter<"IpBan"> | string
+    reason?: StringNullableWithAggregatesFilter<"IpBan"> | string | null
+    until?: DateTimeNullableWithAggregatesFilter<"IpBan"> | Date | string | null
+    createdBy?: StringWithAggregatesFilter<"IpBan"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"IpBan"> | Date | string
+  }
+
   export type ActivityLogCreateInput = {
     id?: string
     userId?: string | null
@@ -4858,6 +6027,69 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     context?: NullableJsonNullValueInput | InputJsonValue
     notified?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpBanCreateInput = {
+    id?: string
+    ip: string
+    reason?: string | null
+    until?: Date | string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type IpBanUncheckedCreateInput = {
+    id?: string
+    ip: string
+    reason?: string | null
+    until?: Date | string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type IpBanUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ip?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    until?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpBanUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ip?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    until?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpBanCreateManyInput = {
+    id?: string
+    ip: string
+    reason?: string | null
+    until?: Date | string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type IpBanUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ip?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    until?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpBanUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ip?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    until?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5166,6 +6398,58 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type IpBanCountOrderByAggregateInput = {
+    id?: SortOrder
+    ip?: SortOrder
+    reason?: SortOrder
+    until?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type IpBanMaxOrderByAggregateInput = {
+    id?: SortOrder
+    ip?: SortOrder
+    reason?: SortOrder
+    until?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type IpBanMinOrderByAggregateInput = {
+    id?: SortOrder
+    ip?: SortOrder
+    reason?: SortOrder
+    until?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -5188,6 +6472,10 @@ export namespace Prisma {
 
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -5360,6 +6648,31 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
 

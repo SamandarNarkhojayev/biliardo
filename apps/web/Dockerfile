@@ -13,6 +13,10 @@ ARG VITE_CLUB_WS_URL=wss://biliardo.kz/club-ws
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_CLUB_WS_URL=$VITE_CLUB_WS_URL
 
+# Puppeteer — devDep, нужен только для локального `build:ssg`.
+# В docker не тянем Chromium (~170MB), production использует static prerender.
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
 COPY package.json package-lock.json* ./
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web

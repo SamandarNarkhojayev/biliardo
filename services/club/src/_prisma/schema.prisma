@@ -36,6 +36,8 @@ model ClubSessionRecord {
   tableId    Int
   tableName  String
   mode       String
+  /// Название тарифа (если запущен по тарифу) — для отображения в истории.
+  tariffName String?
   startTime  DateTime
   endTime    DateTime
   /// Минуты
@@ -44,12 +46,44 @@ model ClubSessionRecord {
   tableCost  Int
   barCost    Int
   totalCost  Int
+  /// JSON: BarOrderItem[] — позиции бар-заказов, привязанные к сессии.
+  /// Опционально, поэтому Json? (старые сессии без детализации остаются валидными).
+  barOrders  Json?
   /// "YYYY-MM-DD" — для быстрой группировки в отчётах
   date       String
+  /// Опционально: id смены, в которой была завершена сессия.
+  shiftId    String?
   createdAt  DateTime @default(now())
 
   @@unique([clubId, externalId])
   @@index([clubId, date])
+  @@index([clubId, startTime])
+  @@index([clubId, shiftId])
+  @@schema("club")
+}
+
+/// История смен, присланных desktop-приложением (когда оператор открывает/закрывает смену).
+/// externalId — id смены из desktop'а; идемпотентность по {clubId, externalId}.
+model ClubShiftRecord {
+  id            String    @id @default(cuid())
+  clubId        String
+  externalId    String
+  /// Локальный userId оператора в desktop'е (НЕ auth.User — это внутренняя сущность desktop'а).
+  operatorId    String
+  operatorName  String
+  startTime     DateTime
+  endTime       DateTime?
+  /// true пока смена активна (endTime = null).
+  isActive      Boolean   @default(true)
+  /// Сумма выручки по смене (table + bar), посчитана на десктопе.
+  totalRevenue  Int       @default(0)
+  tableRevenue  Int       @default(0)
+  barRevenue    Int       @default(0)
+  sessionsCount Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([clubId, externalId])
   @@index([clubId, startTime])
   @@schema("club")
 }

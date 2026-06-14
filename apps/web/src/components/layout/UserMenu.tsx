@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, LogOut, ShieldAlert } from 'lucide-react'
+import { ChevronDown, LogOut, ShieldAlert, LayoutDashboard } from 'lucide-react'
 import type { User } from '@billiard/shared'
 import { useAuthStore } from '@/store/auth'
 import { cn } from '@/utils/cn'
@@ -89,6 +89,15 @@ export function UserMenu({ user }: { user: User }) {
               <div className="mt-0.5 text-xs text-text-muted">{user.phone}</div>
             </div>
             <div className="my-1 h-px bg-[var(--line)]" />
+            {user.accountType === 'CLUB' && (
+              <button
+                type="button"
+                onClick={() => { setOpen(false); navigate('/club/dashboard/tables') }}
+                className="ring-focus flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-emerald-400 transition-colors hover:bg-emerald-500/10"
+              >
+                <LayoutDashboard size={15} /> Дашборд клуба
+              </button>
+            )}
             {user.role === 'ADMIN' && (
               <button
                 type="button"

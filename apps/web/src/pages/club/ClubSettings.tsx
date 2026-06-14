@@ -140,7 +140,22 @@ function ApiPasswordCard() {
         </div>
       </div>
 
-      <div className="mt-5 space-y-3">
+      {/* Поля пароля в <form> — иначе Chrome ругается "Password field is not contained in a form".
+          Скрытое поле username даёт менеджерам паролей правильный контекст (имя клуба). */}
+      <form
+        className="mt-5 space-y-3"
+        onSubmit={(e) => { e.preventDefault(); void save() }}
+        autoComplete="off"
+      >
+        <input
+          type="text"
+          name="username"
+          autoComplete="username"
+          defaultValue={user.clubName ?? user.name}
+          readOnly
+          hidden
+          aria-hidden
+        />
         <Input
           type={show ? 'text' : 'password'}
           label={t('profile.api.new_label')}
@@ -168,16 +183,16 @@ function ApiPasswordCard() {
         {err && <div className="text-sm text-rose-400">{err}</div>}
 
         <div className="flex flex-wrap gap-3 pt-2">
-          <Button variant="primary" loading={submitting} disabled={!pwd || !confirm} onClick={() => void save()}>
+          <Button type="submit" variant="primary" loading={submitting} disabled={!pwd || !confirm}>
             {t(has ? 'profile.api.cta_change' : 'profile.api.cta_set')}
           </Button>
           {has && (
-            <Button variant="secondary" loading={removing} onClick={() => void remove()}>
+            <Button type="button" variant="secondary" loading={removing} onClick={() => void remove()}>
               {t('profile.api.cta_remove')}
             </Button>
           )}
         </div>
-      </div>
+      </form>
     </div>
   )
 }

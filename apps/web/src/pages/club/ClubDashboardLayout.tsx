@@ -1,11 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Activity, BarChart3, Settings, Wifi, WifiOff } from 'lucide-react'
+import { Activity, BarChart3, Settings, Wifi, WifiOff, Coffee } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { useAuthStore } from '@/store/auth'
 import { useClubStore } from '@/store/club'
 import { cn } from '@/utils/cn'
+
+/**
+ * Порог «online»: если desktop sync был меньше N секунд назад — считаем online.
+ * Сервер использует то же значение в /club/status (ONLINE_THRESHOLD_SECONDS=60).
+ */
+const ONLINE_THRESHOLD_MS = 60_000
+/** Авто-рефреш REST-снимка, чтобы при свежем sync UI быстро увидел online. */
+const SNAPSHOT_REFRESH_MS = 15_000
 
 function relativeTime(iso: string | null, t: ReturnType<typeof useTranslation>['t']): string {
   if (!iso) return t('club.layout.never')
@@ -19,15 +27,26 @@ function relativeTime(iso: string | null, t: ReturnType<typeof useTranslation>['
   return t('club.layout.d_ago', { n: d })
 }
 
+/** Тикает каждые 5с, заставляя пересчитывать relativeTime / isOnline без новых fetch'ей. */
+function useNowTick(intervalMs = 5_000): number {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), intervalMs)
+    return () => window.clearInterval(id)
+  }, [intervalMs])
+  return now
+}
+
 export default function ClubDashboardLayout() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const snapshot = useClubStore((s) => s.snapshot)
-  const desktopOnline = useClubStore((s) => s.desktopOnline)
   const reconnecting = useClubStore((s) => s.reconnecting)
   const bootstrap = useClubStore((s) => s.bootstrap)
+  const refresh = useClubStore((s) => s.refresh)
   const teardown = useClubStore((s) => s.teardown)
+  const now = useNowTick(5_000)
 
   useEffect(() => {
     if (!user || user.accountType !== 'CLUB') {
@@ -35,13 +54,26 @@ export default function ClubDashboardLayout() {
       return
     }
     void bootstrap()
-    return () => teardown()
+    // Каждые SNAPSHOT_REFRESH_MS подтягиваем свежий /club/status, чтобы lastSyncAt
+    // отражал реальность даже когда WS закрыт (например, на проде за CloudFlare).
+    const id = window.setInterval(() => { void refresh() }, SNAPSHOT_REFRESH_MS)
+    return () => {
+      window.clearInterval(id)
+      teardown()
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
+  // Online определяем из lastSyncAt: свежий sync (< 60с) → online, иначе offline.
+  // `now` тикает каждые 5с, поэтому статус живёт без новых fetch'ей.
+  const sinceLastSync = snapshot?.lastSyncAt
+    ? now - new Date(snapshot.lastSyncAt).getTime()
+    : null
+  const isOnline = sinceLastSync !== null && sinceLastSync < ONLINE_THRESHOLD_MS
+
   const status = !snapshot
     ? 'no-snapshot'
-    : desktopOnline
+    : isOnline
     ? 'online'
     : reconnecting
     ? 'reconnecting'
@@ -63,6 +95,7 @@ export default function ClubDashboardLayout() {
         {/* Tabs */}
         <div className="mt-5 flex gap-1 overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface-card)] p-1 backdrop-blur-md">
           <Tab to="/club/dashboard/tables" icon={<Activity size={16} />} label={t('club.tabs.tables')} />
+          <Tab to="/club/dashboard/bar" icon={<Coffee size={16} />} label="Бар" />
           <Tab to="/club/dashboard/reports" icon={<BarChart3 size={16} />} label={t('club.tabs.reports')} />
           <Tab to="/club/dashboard/settings" icon={<Settings size={16} />} label={t('club.tabs.settings')} />
         </div>

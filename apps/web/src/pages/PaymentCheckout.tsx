@@ -175,7 +175,7 @@ export default function PaymentCheckout() {
 
               {GOLD_QR_URL && (
                 <div className="mx-auto mt-6 w-fit rounded-2xl bg-white p-3 shadow-lg">
-                  <img src={GOLD_QR_URL} alt="Kaspi QR" className="h-52 w-52 object-contain" />
+                  <img src={GOLD_QR_URL} alt="Kaspi QR" loading="lazy" decoding="async" width="208" height="208" className="h-52 w-52 object-contain" />
                 </div>
               )}
 

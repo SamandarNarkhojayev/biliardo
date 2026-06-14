@@ -112,7 +112,7 @@ function PlayerRow({
         {!ghost && (
           <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--surface-input)] text-[9px] font-bold text-text-muted">
             {avatar ? (
-              <img src={avatar} alt="" className="h-full w-full object-cover" />
+              <img src={avatar} alt="" loading="lazy" decoding="async" width="20" height="20" className="h-full w-full object-cover" />
             ) : name && name !== 'TBD' && name !== '—' ? (
               name.slice(0, 1).toUpperCase()
             ) : (

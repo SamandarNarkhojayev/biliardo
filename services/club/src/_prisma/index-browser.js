@@ -136,14 +136,34 @@ exports.Prisma.ClubSessionRecordScalarFieldEnum = {
   tableId: 'tableId',
   tableName: 'tableName',
   mode: 'mode',
+  tariffName: 'tariffName',
   startTime: 'startTime',
   endTime: 'endTime',
   duration: 'duration',
   tableCost: 'tableCost',
   barCost: 'barCost',
   totalCost: 'totalCost',
+  barOrders: 'barOrders',
   date: 'date',
+  shiftId: 'shiftId',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.ClubShiftRecordScalarFieldEnum = {
+  id: 'id',
+  clubId: 'clubId',
+  externalId: 'externalId',
+  operatorId: 'operatorId',
+  operatorName: 'operatorName',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  isActive: 'isActive',
+  totalRevenue: 'totalRevenue',
+  tableRevenue: 'tableRevenue',
+  barRevenue: 'barRevenue',
+  sessionsCount: 'sessionsCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -152,6 +172,11 @@ exports.Prisma.SortOrder = {
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
@@ -166,10 +191,16 @@ exports.Prisma.JsonNullValueFilter = {
   AnyNull: Prisma.AnyNull
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
   ClubSyncSnapshot: 'ClubSyncSnapshot',
-  ClubSessionRecord: 'ClubSessionRecord'
+  ClubSessionRecord: 'ClubSessionRecord',
+  ClubShiftRecord: 'ClubShiftRecord'
 };
 
 /**

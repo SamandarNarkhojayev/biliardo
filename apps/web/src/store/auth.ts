@@ -153,10 +153,28 @@ export const useAuthStore = create<AuthState>()(
 export const useIsAuthenticated = () => useAuthStore((s) => s.user !== null && s.accessToken !== null)
 
 // Подключаем API-клиент к store: он будет брать токен и обрабатывать refresh.
+let authExpiredNotified = false
 configureApiClient({
   getAccessToken: () => useAuthStore.getState().accessToken,
   onTokenRefreshed: (t) => useAuthStore.getState()._setToken(t),
   onAuthExpired: () => {
+    const wasLoggedIn = !!useAuthStore.getState().user
     useAuthStore.setState({ user: null, accessToken: null })
+    // Уведомляем один раз за сессию (между логинами), чтобы не спамить
+    // toast'ом, пока несколько компонентов одновременно ловят 401.
+    if (wasLoggedIn && !authExpiredNotified) {
+      authExpiredNotified = true
+      // Импортируем toast лениво, чтобы избежать циклической зависимости.
+      void import('@/components/ui/Toast').then(({ toast }) => {
+        toast.warning?.('Сессия истекла', 'Войди заново чтобы продолжить')
+        // На следующий успешный login снова разрешаем уведомление.
+        const unsub = useAuthStore.subscribe((s) => {
+          if (s.user) {
+            authExpiredNotified = false
+            unsub()
+          }
+        })
+      }).catch(() => { /* toast недоступен — игнор */ })
+    }
   },
 })

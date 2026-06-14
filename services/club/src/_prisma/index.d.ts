@@ -24,6 +24,12 @@ export type ClubSyncSnapshot = $Result.DefaultSelection<Prisma.$ClubSyncSnapshot
  * externalId уникален в пределах clubId — повторный sync не дублирует.
  */
 export type ClubSessionRecord = $Result.DefaultSelection<Prisma.$ClubSessionRecordPayload>
+/**
+ * Model ClubShiftRecord
+ * История смен, присланных desktop-приложением (когда оператор открывает/закрывает смену).
+ * externalId — id смены из desktop'а; идемпотентность по {clubId, externalId}.
+ */
+export type ClubShiftRecord = $Result.DefaultSelection<Prisma.$ClubShiftRecordPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -162,6 +168,16 @@ export class PrismaClient<
     * ```
     */
   get clubSessionRecord(): Prisma.ClubSessionRecordDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.clubShiftRecord`: Exposes CRUD operations for the **ClubShiftRecord** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ClubShiftRecords
+    * const clubShiftRecords = await prisma.clubShiftRecord.findMany()
+    * ```
+    */
+  get clubShiftRecord(): Prisma.ClubShiftRecordDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -604,7 +620,8 @@ export namespace Prisma {
 
   export const ModelName: {
     ClubSyncSnapshot: 'ClubSyncSnapshot',
-    ClubSessionRecord: 'ClubSessionRecord'
+    ClubSessionRecord: 'ClubSessionRecord',
+    ClubShiftRecord: 'ClubShiftRecord'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -623,7 +640,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "clubSyncSnapshot" | "clubSessionRecord"
+      modelProps: "clubSyncSnapshot" | "clubSessionRecord" | "clubShiftRecord"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -775,6 +792,80 @@ export namespace Prisma {
           }
         }
       }
+      ClubShiftRecord: {
+        payload: Prisma.$ClubShiftRecordPayload<ExtArgs>
+        fields: Prisma.ClubShiftRecordFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ClubShiftRecordFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ClubShiftRecordFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>
+          }
+          findFirst: {
+            args: Prisma.ClubShiftRecordFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ClubShiftRecordFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>
+          }
+          findMany: {
+            args: Prisma.ClubShiftRecordFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>[]
+          }
+          create: {
+            args: Prisma.ClubShiftRecordCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>
+          }
+          createMany: {
+            args: Prisma.ClubShiftRecordCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ClubShiftRecordCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>[]
+          }
+          delete: {
+            args: Prisma.ClubShiftRecordDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>
+          }
+          update: {
+            args: Prisma.ClubShiftRecordUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>
+          }
+          deleteMany: {
+            args: Prisma.ClubShiftRecordDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ClubShiftRecordUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ClubShiftRecordUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>[]
+          }
+          upsert: {
+            args: Prisma.ClubShiftRecordUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ClubShiftRecordPayload>
+          }
+          aggregate: {
+            args: Prisma.ClubShiftRecordAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateClubShiftRecord>
+          }
+          groupBy: {
+            args: Prisma.ClubShiftRecordGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ClubShiftRecordGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ClubShiftRecordCountArgs<ExtArgs>
+            result: $Utils.Optional<ClubShiftRecordCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -873,6 +964,7 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     clubSyncSnapshot?: ClubSyncSnapshotOmit
     clubSessionRecord?: ClubSessionRecordOmit
+    clubShiftRecord?: ClubShiftRecordOmit
   }
 
   /* Types for Logging */
@@ -1981,6 +2073,7 @@ export namespace Prisma {
     tableId: number | null
     tableName: string | null
     mode: string | null
+    tariffName: string | null
     startTime: Date | null
     endTime: Date | null
     duration: number | null
@@ -1988,6 +2081,7 @@ export namespace Prisma {
     barCost: number | null
     totalCost: number | null
     date: string | null
+    shiftId: string | null
     createdAt: Date | null
   }
 
@@ -1998,6 +2092,7 @@ export namespace Prisma {
     tableId: number | null
     tableName: string | null
     mode: string | null
+    tariffName: string | null
     startTime: Date | null
     endTime: Date | null
     duration: number | null
@@ -2005,6 +2100,7 @@ export namespace Prisma {
     barCost: number | null
     totalCost: number | null
     date: string | null
+    shiftId: string | null
     createdAt: Date | null
   }
 
@@ -2015,13 +2111,16 @@ export namespace Prisma {
     tableId: number
     tableName: number
     mode: number
+    tariffName: number
     startTime: number
     endTime: number
     duration: number
     tableCost: number
     barCost: number
     totalCost: number
+    barOrders: number
     date: number
+    shiftId: number
     createdAt: number
     _all: number
   }
@@ -2050,6 +2149,7 @@ export namespace Prisma {
     tableId?: true
     tableName?: true
     mode?: true
+    tariffName?: true
     startTime?: true
     endTime?: true
     duration?: true
@@ -2057,6 +2157,7 @@ export namespace Prisma {
     barCost?: true
     totalCost?: true
     date?: true
+    shiftId?: true
     createdAt?: true
   }
 
@@ -2067,6 +2168,7 @@ export namespace Prisma {
     tableId?: true
     tableName?: true
     mode?: true
+    tariffName?: true
     startTime?: true
     endTime?: true
     duration?: true
@@ -2074,6 +2176,7 @@ export namespace Prisma {
     barCost?: true
     totalCost?: true
     date?: true
+    shiftId?: true
     createdAt?: true
   }
 
@@ -2084,13 +2187,16 @@ export namespace Prisma {
     tableId?: true
     tableName?: true
     mode?: true
+    tariffName?: true
     startTime?: true
     endTime?: true
     duration?: true
     tableCost?: true
     barCost?: true
     totalCost?: true
+    barOrders?: true
     date?: true
+    shiftId?: true
     createdAt?: true
     _all?: true
   }
@@ -2188,13 +2294,16 @@ export namespace Prisma {
     tableId: number
     tableName: string
     mode: string
+    tariffName: string | null
     startTime: Date
     endTime: Date
     duration: number
     tableCost: number
     barCost: number
     totalCost: number
+    barOrders: JsonValue | null
     date: string
+    shiftId: string | null
     createdAt: Date
     _count: ClubSessionRecordCountAggregateOutputType | null
     _avg: ClubSessionRecordAvgAggregateOutputType | null
@@ -2224,13 +2333,16 @@ export namespace Prisma {
     tableId?: boolean
     tableName?: boolean
     mode?: boolean
+    tariffName?: boolean
     startTime?: boolean
     endTime?: boolean
     duration?: boolean
     tableCost?: boolean
     barCost?: boolean
     totalCost?: boolean
+    barOrders?: boolean
     date?: boolean
+    shiftId?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["clubSessionRecord"]>
 
@@ -2241,13 +2353,16 @@ export namespace Prisma {
     tableId?: boolean
     tableName?: boolean
     mode?: boolean
+    tariffName?: boolean
     startTime?: boolean
     endTime?: boolean
     duration?: boolean
     tableCost?: boolean
     barCost?: boolean
     totalCost?: boolean
+    barOrders?: boolean
     date?: boolean
+    shiftId?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["clubSessionRecord"]>
 
@@ -2258,13 +2373,16 @@ export namespace Prisma {
     tableId?: boolean
     tableName?: boolean
     mode?: boolean
+    tariffName?: boolean
     startTime?: boolean
     endTime?: boolean
     duration?: boolean
     tableCost?: boolean
     barCost?: boolean
     totalCost?: boolean
+    barOrders?: boolean
     date?: boolean
+    shiftId?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["clubSessionRecord"]>
 
@@ -2275,17 +2393,20 @@ export namespace Prisma {
     tableId?: boolean
     tableName?: boolean
     mode?: boolean
+    tariffName?: boolean
     startTime?: boolean
     endTime?: boolean
     duration?: boolean
     tableCost?: boolean
     barCost?: boolean
     totalCost?: boolean
+    barOrders?: boolean
     date?: boolean
+    shiftId?: boolean
     createdAt?: boolean
   }
 
-  export type ClubSessionRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clubId" | "externalId" | "tableId" | "tableName" | "mode" | "startTime" | "endTime" | "duration" | "tableCost" | "barCost" | "totalCost" | "date" | "createdAt", ExtArgs["result"]["clubSessionRecord"]>
+  export type ClubSessionRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clubId" | "externalId" | "tableId" | "tableName" | "mode" | "tariffName" | "startTime" | "endTime" | "duration" | "tableCost" | "barCost" | "totalCost" | "barOrders" | "date" | "shiftId" | "createdAt", ExtArgs["result"]["clubSessionRecord"]>
 
   export type $ClubSessionRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ClubSessionRecord"
@@ -2297,6 +2418,10 @@ export namespace Prisma {
       tableId: number
       tableName: string
       mode: string
+      /**
+       * Название тарифа (если запущен по тарифу) — для отображения в истории.
+       */
+      tariffName: string | null
       startTime: Date
       endTime: Date
       /**
@@ -2310,9 +2435,18 @@ export namespace Prisma {
       barCost: number
       totalCost: number
       /**
+       * JSON: BarOrderItem[] — позиции бар-заказов, привязанные к сессии.
+       * Опционально, поэтому Json? (старые сессии без детализации остаются валидными).
+       */
+      barOrders: Prisma.JsonValue | null
+      /**
        * "YYYY-MM-DD" — для быстрой группировки в отчётах
        */
       date: string
+      /**
+       * Опционально: id смены, в которой была завершена сессия.
+       */
+      shiftId: string | null
       createdAt: Date
     }, ExtArgs["result"]["clubSessionRecord"]>
     composites: {}
@@ -2743,13 +2877,16 @@ export namespace Prisma {
     readonly tableId: FieldRef<"ClubSessionRecord", 'Int'>
     readonly tableName: FieldRef<"ClubSessionRecord", 'String'>
     readonly mode: FieldRef<"ClubSessionRecord", 'String'>
+    readonly tariffName: FieldRef<"ClubSessionRecord", 'String'>
     readonly startTime: FieldRef<"ClubSessionRecord", 'DateTime'>
     readonly endTime: FieldRef<"ClubSessionRecord", 'DateTime'>
     readonly duration: FieldRef<"ClubSessionRecord", 'Int'>
     readonly tableCost: FieldRef<"ClubSessionRecord", 'Int'>
     readonly barCost: FieldRef<"ClubSessionRecord", 'Int'>
     readonly totalCost: FieldRef<"ClubSessionRecord", 'Int'>
+    readonly barOrders: FieldRef<"ClubSessionRecord", 'Json'>
     readonly date: FieldRef<"ClubSessionRecord", 'String'>
+    readonly shiftId: FieldRef<"ClubSessionRecord", 'String'>
     readonly createdAt: FieldRef<"ClubSessionRecord", 'DateTime'>
   }
     
@@ -3118,6 +3255,1173 @@ export namespace Prisma {
 
 
   /**
+   * Model ClubShiftRecord
+   */
+
+  export type AggregateClubShiftRecord = {
+    _count: ClubShiftRecordCountAggregateOutputType | null
+    _avg: ClubShiftRecordAvgAggregateOutputType | null
+    _sum: ClubShiftRecordSumAggregateOutputType | null
+    _min: ClubShiftRecordMinAggregateOutputType | null
+    _max: ClubShiftRecordMaxAggregateOutputType | null
+  }
+
+  export type ClubShiftRecordAvgAggregateOutputType = {
+    totalRevenue: number | null
+    tableRevenue: number | null
+    barRevenue: number | null
+    sessionsCount: number | null
+  }
+
+  export type ClubShiftRecordSumAggregateOutputType = {
+    totalRevenue: number | null
+    tableRevenue: number | null
+    barRevenue: number | null
+    sessionsCount: number | null
+  }
+
+  export type ClubShiftRecordMinAggregateOutputType = {
+    id: string | null
+    clubId: string | null
+    externalId: string | null
+    operatorId: string | null
+    operatorName: string | null
+    startTime: Date | null
+    endTime: Date | null
+    isActive: boolean | null
+    totalRevenue: number | null
+    tableRevenue: number | null
+    barRevenue: number | null
+    sessionsCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ClubShiftRecordMaxAggregateOutputType = {
+    id: string | null
+    clubId: string | null
+    externalId: string | null
+    operatorId: string | null
+    operatorName: string | null
+    startTime: Date | null
+    endTime: Date | null
+    isActive: boolean | null
+    totalRevenue: number | null
+    tableRevenue: number | null
+    barRevenue: number | null
+    sessionsCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ClubShiftRecordCountAggregateOutputType = {
+    id: number
+    clubId: number
+    externalId: number
+    operatorId: number
+    operatorName: number
+    startTime: number
+    endTime: number
+    isActive: number
+    totalRevenue: number
+    tableRevenue: number
+    barRevenue: number
+    sessionsCount: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ClubShiftRecordAvgAggregateInputType = {
+    totalRevenue?: true
+    tableRevenue?: true
+    barRevenue?: true
+    sessionsCount?: true
+  }
+
+  export type ClubShiftRecordSumAggregateInputType = {
+    totalRevenue?: true
+    tableRevenue?: true
+    barRevenue?: true
+    sessionsCount?: true
+  }
+
+  export type ClubShiftRecordMinAggregateInputType = {
+    id?: true
+    clubId?: true
+    externalId?: true
+    operatorId?: true
+    operatorName?: true
+    startTime?: true
+    endTime?: true
+    isActive?: true
+    totalRevenue?: true
+    tableRevenue?: true
+    barRevenue?: true
+    sessionsCount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ClubShiftRecordMaxAggregateInputType = {
+    id?: true
+    clubId?: true
+    externalId?: true
+    operatorId?: true
+    operatorName?: true
+    startTime?: true
+    endTime?: true
+    isActive?: true
+    totalRevenue?: true
+    tableRevenue?: true
+    barRevenue?: true
+    sessionsCount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ClubShiftRecordCountAggregateInputType = {
+    id?: true
+    clubId?: true
+    externalId?: true
+    operatorId?: true
+    operatorName?: true
+    startTime?: true
+    endTime?: true
+    isActive?: true
+    totalRevenue?: true
+    tableRevenue?: true
+    barRevenue?: true
+    sessionsCount?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ClubShiftRecordAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ClubShiftRecord to aggregate.
+     */
+    where?: ClubShiftRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClubShiftRecords to fetch.
+     */
+    orderBy?: ClubShiftRecordOrderByWithRelationInput | ClubShiftRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ClubShiftRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClubShiftRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClubShiftRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ClubShiftRecords
+    **/
+    _count?: true | ClubShiftRecordCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ClubShiftRecordAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ClubShiftRecordSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ClubShiftRecordMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ClubShiftRecordMaxAggregateInputType
+  }
+
+  export type GetClubShiftRecordAggregateType<T extends ClubShiftRecordAggregateArgs> = {
+        [P in keyof T & keyof AggregateClubShiftRecord]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateClubShiftRecord[P]>
+      : GetScalarType<T[P], AggregateClubShiftRecord[P]>
+  }
+
+
+
+
+  export type ClubShiftRecordGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ClubShiftRecordWhereInput
+    orderBy?: ClubShiftRecordOrderByWithAggregationInput | ClubShiftRecordOrderByWithAggregationInput[]
+    by: ClubShiftRecordScalarFieldEnum[] | ClubShiftRecordScalarFieldEnum
+    having?: ClubShiftRecordScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ClubShiftRecordCountAggregateInputType | true
+    _avg?: ClubShiftRecordAvgAggregateInputType
+    _sum?: ClubShiftRecordSumAggregateInputType
+    _min?: ClubShiftRecordMinAggregateInputType
+    _max?: ClubShiftRecordMaxAggregateInputType
+  }
+
+  export type ClubShiftRecordGroupByOutputType = {
+    id: string
+    clubId: string
+    externalId: string
+    operatorId: string
+    operatorName: string
+    startTime: Date
+    endTime: Date | null
+    isActive: boolean
+    totalRevenue: number
+    tableRevenue: number
+    barRevenue: number
+    sessionsCount: number
+    createdAt: Date
+    updatedAt: Date
+    _count: ClubShiftRecordCountAggregateOutputType | null
+    _avg: ClubShiftRecordAvgAggregateOutputType | null
+    _sum: ClubShiftRecordSumAggregateOutputType | null
+    _min: ClubShiftRecordMinAggregateOutputType | null
+    _max: ClubShiftRecordMaxAggregateOutputType | null
+  }
+
+  type GetClubShiftRecordGroupByPayload<T extends ClubShiftRecordGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ClubShiftRecordGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ClubShiftRecordGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ClubShiftRecordGroupByOutputType[P]>
+            : GetScalarType<T[P], ClubShiftRecordGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ClubShiftRecordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    clubId?: boolean
+    externalId?: boolean
+    operatorId?: boolean
+    operatorName?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    isActive?: boolean
+    totalRevenue?: boolean
+    tableRevenue?: boolean
+    barRevenue?: boolean
+    sessionsCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["clubShiftRecord"]>
+
+  export type ClubShiftRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    clubId?: boolean
+    externalId?: boolean
+    operatorId?: boolean
+    operatorName?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    isActive?: boolean
+    totalRevenue?: boolean
+    tableRevenue?: boolean
+    barRevenue?: boolean
+    sessionsCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["clubShiftRecord"]>
+
+  export type ClubShiftRecordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    clubId?: boolean
+    externalId?: boolean
+    operatorId?: boolean
+    operatorName?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    isActive?: boolean
+    totalRevenue?: boolean
+    tableRevenue?: boolean
+    barRevenue?: boolean
+    sessionsCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["clubShiftRecord"]>
+
+  export type ClubShiftRecordSelectScalar = {
+    id?: boolean
+    clubId?: boolean
+    externalId?: boolean
+    operatorId?: boolean
+    operatorName?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    isActive?: boolean
+    totalRevenue?: boolean
+    tableRevenue?: boolean
+    barRevenue?: boolean
+    sessionsCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ClubShiftRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clubId" | "externalId" | "operatorId" | "operatorName" | "startTime" | "endTime" | "isActive" | "totalRevenue" | "tableRevenue" | "barRevenue" | "sessionsCount" | "createdAt" | "updatedAt", ExtArgs["result"]["clubShiftRecord"]>
+
+  export type $ClubShiftRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ClubShiftRecord"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      clubId: string
+      externalId: string
+      /**
+       * Локальный userId оператора в desktop'е (НЕ auth.User — это внутренняя сущность desktop'а).
+       */
+      operatorId: string
+      operatorName: string
+      startTime: Date
+      endTime: Date | null
+      /**
+       * true пока смена активна (endTime = null).
+       */
+      isActive: boolean
+      /**
+       * Сумма выручки по смене (table + bar), посчитана на десктопе.
+       */
+      totalRevenue: number
+      tableRevenue: number
+      barRevenue: number
+      sessionsCount: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["clubShiftRecord"]>
+    composites: {}
+  }
+
+  type ClubShiftRecordGetPayload<S extends boolean | null | undefined | ClubShiftRecordDefaultArgs> = $Result.GetResult<Prisma.$ClubShiftRecordPayload, S>
+
+  type ClubShiftRecordCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ClubShiftRecordFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ClubShiftRecordCountAggregateInputType | true
+    }
+
+  export interface ClubShiftRecordDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ClubShiftRecord'], meta: { name: 'ClubShiftRecord' } }
+    /**
+     * Find zero or one ClubShiftRecord that matches the filter.
+     * @param {ClubShiftRecordFindUniqueArgs} args - Arguments to find a ClubShiftRecord
+     * @example
+     * // Get one ClubShiftRecord
+     * const clubShiftRecord = await prisma.clubShiftRecord.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ClubShiftRecordFindUniqueArgs>(args: SelectSubset<T, ClubShiftRecordFindUniqueArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ClubShiftRecord that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ClubShiftRecordFindUniqueOrThrowArgs} args - Arguments to find a ClubShiftRecord
+     * @example
+     * // Get one ClubShiftRecord
+     * const clubShiftRecord = await prisma.clubShiftRecord.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ClubShiftRecordFindUniqueOrThrowArgs>(args: SelectSubset<T, ClubShiftRecordFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ClubShiftRecord that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClubShiftRecordFindFirstArgs} args - Arguments to find a ClubShiftRecord
+     * @example
+     * // Get one ClubShiftRecord
+     * const clubShiftRecord = await prisma.clubShiftRecord.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ClubShiftRecordFindFirstArgs>(args?: SelectSubset<T, ClubShiftRecordFindFirstArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ClubShiftRecord that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClubShiftRecordFindFirstOrThrowArgs} args - Arguments to find a ClubShiftRecord
+     * @example
+     * // Get one ClubShiftRecord
+     * const clubShiftRecord = await prisma.clubShiftRecord.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ClubShiftRecordFindFirstOrThrowArgs>(args?: SelectSubset<T, ClubShiftRecordFindFirstOrThrowArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ClubShiftRecords that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClubShiftRecordFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ClubShiftRecords
+     * const clubShiftRecords = await prisma.clubShiftRecord.findMany()
+     * 
+     * // Get first 10 ClubShiftRecords
+     * const clubShiftRecords = await prisma.clubShiftRecord.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const clubShiftRecordWithIdOnly = await prisma.clubShiftRecord.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ClubShiftRecordFindManyArgs>(args?: SelectSubset<T, ClubShiftRecordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ClubShiftRecord.
+     * @param {ClubShiftRecordCreateArgs} args - Arguments to create a ClubShiftRecord.
+     * @example
+     * // Create one ClubShiftRecord
+     * const ClubShiftRecord = await prisma.clubShiftRecord.create({
+     *   data: {
+     *     // ... data to create a ClubShiftRecord
+     *   }
+     * })
+     * 
+     */
+    create<T extends ClubShiftRecordCreateArgs>(args: SelectSubset<T, ClubShiftRecordCreateArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ClubShiftRecords.
+     * @param {ClubShiftRecordCreateManyArgs} args - Arguments to create many ClubShiftRecords.
+     * @example
+     * // Create many ClubShiftRecords
+     * const clubShiftRecord = await prisma.clubShiftRecord.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ClubShiftRecordCreateManyArgs>(args?: SelectSubset<T, ClubShiftRecordCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ClubShiftRecords and returns the data saved in the database.
+     * @param {ClubShiftRecordCreateManyAndReturnArgs} args - Arguments to create many ClubShiftRecords.
+     * @example
+     * // Create many ClubShiftRecords
+     * const clubShiftRecord = await prisma.clubShiftRecord.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ClubShiftRecords and only return the `id`
+     * const clubShiftRecordWithIdOnly = await prisma.clubShiftRecord.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ClubShiftRecordCreateManyAndReturnArgs>(args?: SelectSubset<T, ClubShiftRecordCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ClubShiftRecord.
+     * @param {ClubShiftRecordDeleteArgs} args - Arguments to delete one ClubShiftRecord.
+     * @example
+     * // Delete one ClubShiftRecord
+     * const ClubShiftRecord = await prisma.clubShiftRecord.delete({
+     *   where: {
+     *     // ... filter to delete one ClubShiftRecord
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ClubShiftRecordDeleteArgs>(args: SelectSubset<T, ClubShiftRecordDeleteArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ClubShiftRecord.
+     * @param {ClubShiftRecordUpdateArgs} args - Arguments to update one ClubShiftRecord.
+     * @example
+     * // Update one ClubShiftRecord
+     * const clubShiftRecord = await prisma.clubShiftRecord.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ClubShiftRecordUpdateArgs>(args: SelectSubset<T, ClubShiftRecordUpdateArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ClubShiftRecords.
+     * @param {ClubShiftRecordDeleteManyArgs} args - Arguments to filter ClubShiftRecords to delete.
+     * @example
+     * // Delete a few ClubShiftRecords
+     * const { count } = await prisma.clubShiftRecord.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ClubShiftRecordDeleteManyArgs>(args?: SelectSubset<T, ClubShiftRecordDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ClubShiftRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClubShiftRecordUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ClubShiftRecords
+     * const clubShiftRecord = await prisma.clubShiftRecord.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ClubShiftRecordUpdateManyArgs>(args: SelectSubset<T, ClubShiftRecordUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ClubShiftRecords and returns the data updated in the database.
+     * @param {ClubShiftRecordUpdateManyAndReturnArgs} args - Arguments to update many ClubShiftRecords.
+     * @example
+     * // Update many ClubShiftRecords
+     * const clubShiftRecord = await prisma.clubShiftRecord.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ClubShiftRecords and only return the `id`
+     * const clubShiftRecordWithIdOnly = await prisma.clubShiftRecord.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ClubShiftRecordUpdateManyAndReturnArgs>(args: SelectSubset<T, ClubShiftRecordUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ClubShiftRecord.
+     * @param {ClubShiftRecordUpsertArgs} args - Arguments to update or create a ClubShiftRecord.
+     * @example
+     * // Update or create a ClubShiftRecord
+     * const clubShiftRecord = await prisma.clubShiftRecord.upsert({
+     *   create: {
+     *     // ... data to create a ClubShiftRecord
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ClubShiftRecord we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ClubShiftRecordUpsertArgs>(args: SelectSubset<T, ClubShiftRecordUpsertArgs<ExtArgs>>): Prisma__ClubShiftRecordClient<$Result.GetResult<Prisma.$ClubShiftRecordPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ClubShiftRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClubShiftRecordCountArgs} args - Arguments to filter ClubShiftRecords to count.
+     * @example
+     * // Count the number of ClubShiftRecords
+     * const count = await prisma.clubShiftRecord.count({
+     *   where: {
+     *     // ... the filter for the ClubShiftRecords we want to count
+     *   }
+     * })
+    **/
+    count<T extends ClubShiftRecordCountArgs>(
+      args?: Subset<T, ClubShiftRecordCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ClubShiftRecordCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ClubShiftRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClubShiftRecordAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ClubShiftRecordAggregateArgs>(args: Subset<T, ClubShiftRecordAggregateArgs>): Prisma.PrismaPromise<GetClubShiftRecordAggregateType<T>>
+
+    /**
+     * Group by ClubShiftRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ClubShiftRecordGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ClubShiftRecordGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ClubShiftRecordGroupByArgs['orderBy'] }
+        : { orderBy?: ClubShiftRecordGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ClubShiftRecordGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetClubShiftRecordGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ClubShiftRecord model
+   */
+  readonly fields: ClubShiftRecordFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ClubShiftRecord.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ClubShiftRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ClubShiftRecord model
+   */
+  interface ClubShiftRecordFieldRefs {
+    readonly id: FieldRef<"ClubShiftRecord", 'String'>
+    readonly clubId: FieldRef<"ClubShiftRecord", 'String'>
+    readonly externalId: FieldRef<"ClubShiftRecord", 'String'>
+    readonly operatorId: FieldRef<"ClubShiftRecord", 'String'>
+    readonly operatorName: FieldRef<"ClubShiftRecord", 'String'>
+    readonly startTime: FieldRef<"ClubShiftRecord", 'DateTime'>
+    readonly endTime: FieldRef<"ClubShiftRecord", 'DateTime'>
+    readonly isActive: FieldRef<"ClubShiftRecord", 'Boolean'>
+    readonly totalRevenue: FieldRef<"ClubShiftRecord", 'Int'>
+    readonly tableRevenue: FieldRef<"ClubShiftRecord", 'Int'>
+    readonly barRevenue: FieldRef<"ClubShiftRecord", 'Int'>
+    readonly sessionsCount: FieldRef<"ClubShiftRecord", 'Int'>
+    readonly createdAt: FieldRef<"ClubShiftRecord", 'DateTime'>
+    readonly updatedAt: FieldRef<"ClubShiftRecord", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ClubShiftRecord findUnique
+   */
+  export type ClubShiftRecordFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which ClubShiftRecord to fetch.
+     */
+    where: ClubShiftRecordWhereUniqueInput
+  }
+
+  /**
+   * ClubShiftRecord findUniqueOrThrow
+   */
+  export type ClubShiftRecordFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which ClubShiftRecord to fetch.
+     */
+    where: ClubShiftRecordWhereUniqueInput
+  }
+
+  /**
+   * ClubShiftRecord findFirst
+   */
+  export type ClubShiftRecordFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which ClubShiftRecord to fetch.
+     */
+    where?: ClubShiftRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClubShiftRecords to fetch.
+     */
+    orderBy?: ClubShiftRecordOrderByWithRelationInput | ClubShiftRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ClubShiftRecords.
+     */
+    cursor?: ClubShiftRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClubShiftRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClubShiftRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ClubShiftRecords.
+     */
+    distinct?: ClubShiftRecordScalarFieldEnum | ClubShiftRecordScalarFieldEnum[]
+  }
+
+  /**
+   * ClubShiftRecord findFirstOrThrow
+   */
+  export type ClubShiftRecordFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which ClubShiftRecord to fetch.
+     */
+    where?: ClubShiftRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClubShiftRecords to fetch.
+     */
+    orderBy?: ClubShiftRecordOrderByWithRelationInput | ClubShiftRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ClubShiftRecords.
+     */
+    cursor?: ClubShiftRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClubShiftRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClubShiftRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ClubShiftRecords.
+     */
+    distinct?: ClubShiftRecordScalarFieldEnum | ClubShiftRecordScalarFieldEnum[]
+  }
+
+  /**
+   * ClubShiftRecord findMany
+   */
+  export type ClubShiftRecordFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which ClubShiftRecords to fetch.
+     */
+    where?: ClubShiftRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ClubShiftRecords to fetch.
+     */
+    orderBy?: ClubShiftRecordOrderByWithRelationInput | ClubShiftRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ClubShiftRecords.
+     */
+    cursor?: ClubShiftRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ClubShiftRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ClubShiftRecords.
+     */
+    skip?: number
+    distinct?: ClubShiftRecordScalarFieldEnum | ClubShiftRecordScalarFieldEnum[]
+  }
+
+  /**
+   * ClubShiftRecord create
+   */
+  export type ClubShiftRecordCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ClubShiftRecord.
+     */
+    data: XOR<ClubShiftRecordCreateInput, ClubShiftRecordUncheckedCreateInput>
+  }
+
+  /**
+   * ClubShiftRecord createMany
+   */
+  export type ClubShiftRecordCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ClubShiftRecords.
+     */
+    data: ClubShiftRecordCreateManyInput | ClubShiftRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ClubShiftRecord createManyAndReturn
+   */
+  export type ClubShiftRecordCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * The data used to create many ClubShiftRecords.
+     */
+    data: ClubShiftRecordCreateManyInput | ClubShiftRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ClubShiftRecord update
+   */
+  export type ClubShiftRecordUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ClubShiftRecord.
+     */
+    data: XOR<ClubShiftRecordUpdateInput, ClubShiftRecordUncheckedUpdateInput>
+    /**
+     * Choose, which ClubShiftRecord to update.
+     */
+    where: ClubShiftRecordWhereUniqueInput
+  }
+
+  /**
+   * ClubShiftRecord updateMany
+   */
+  export type ClubShiftRecordUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ClubShiftRecords.
+     */
+    data: XOR<ClubShiftRecordUpdateManyMutationInput, ClubShiftRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which ClubShiftRecords to update
+     */
+    where?: ClubShiftRecordWhereInput
+    /**
+     * Limit how many ClubShiftRecords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ClubShiftRecord updateManyAndReturn
+   */
+  export type ClubShiftRecordUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * The data used to update ClubShiftRecords.
+     */
+    data: XOR<ClubShiftRecordUpdateManyMutationInput, ClubShiftRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which ClubShiftRecords to update
+     */
+    where?: ClubShiftRecordWhereInput
+    /**
+     * Limit how many ClubShiftRecords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ClubShiftRecord upsert
+   */
+  export type ClubShiftRecordUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ClubShiftRecord to update in case it exists.
+     */
+    where: ClubShiftRecordWhereUniqueInput
+    /**
+     * In case the ClubShiftRecord found by the `where` argument doesn't exist, create a new ClubShiftRecord with this data.
+     */
+    create: XOR<ClubShiftRecordCreateInput, ClubShiftRecordUncheckedCreateInput>
+    /**
+     * In case the ClubShiftRecord was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ClubShiftRecordUpdateInput, ClubShiftRecordUncheckedUpdateInput>
+  }
+
+  /**
+   * ClubShiftRecord delete
+   */
+  export type ClubShiftRecordDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+    /**
+     * Filter which ClubShiftRecord to delete.
+     */
+    where: ClubShiftRecordWhereUniqueInput
+  }
+
+  /**
+   * ClubShiftRecord deleteMany
+   */
+  export type ClubShiftRecordDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ClubShiftRecords to delete
+     */
+    where?: ClubShiftRecordWhereInput
+    /**
+     * Limit how many ClubShiftRecords to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ClubShiftRecord without action
+   */
+  export type ClubShiftRecordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ClubShiftRecord
+     */
+    select?: ClubShiftRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ClubShiftRecord
+     */
+    omit?: ClubShiftRecordOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -3149,17 +4453,40 @@ export namespace Prisma {
     tableId: 'tableId',
     tableName: 'tableName',
     mode: 'mode',
+    tariffName: 'tariffName',
     startTime: 'startTime',
     endTime: 'endTime',
     duration: 'duration',
     tableCost: 'tableCost',
     barCost: 'barCost',
     totalCost: 'totalCost',
+    barOrders: 'barOrders',
     date: 'date',
+    shiftId: 'shiftId',
     createdAt: 'createdAt'
   };
 
   export type ClubSessionRecordScalarFieldEnum = (typeof ClubSessionRecordScalarFieldEnum)[keyof typeof ClubSessionRecordScalarFieldEnum]
+
+
+  export const ClubShiftRecordScalarFieldEnum: {
+    id: 'id',
+    clubId: 'clubId',
+    externalId: 'externalId',
+    operatorId: 'operatorId',
+    operatorName: 'operatorName',
+    startTime: 'startTime',
+    endTime: 'endTime',
+    isActive: 'isActive',
+    totalRevenue: 'totalRevenue',
+    tableRevenue: 'tableRevenue',
+    barRevenue: 'barRevenue',
+    sessionsCount: 'sessionsCount',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ClubShiftRecordScalarFieldEnum = (typeof ClubShiftRecordScalarFieldEnum)[keyof typeof ClubShiftRecordScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -3177,6 +4504,14 @@ export namespace Prisma {
   export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
@@ -3192,6 +4527,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -3252,6 +4595,13 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -3334,13 +4684,16 @@ export namespace Prisma {
     tableId?: IntFilter<"ClubSessionRecord"> | number
     tableName?: StringFilter<"ClubSessionRecord"> | string
     mode?: StringFilter<"ClubSessionRecord"> | string
+    tariffName?: StringNullableFilter<"ClubSessionRecord"> | string | null
     startTime?: DateTimeFilter<"ClubSessionRecord"> | Date | string
     endTime?: DateTimeFilter<"ClubSessionRecord"> | Date | string
     duration?: IntFilter<"ClubSessionRecord"> | number
     tableCost?: IntFilter<"ClubSessionRecord"> | number
     barCost?: IntFilter<"ClubSessionRecord"> | number
     totalCost?: IntFilter<"ClubSessionRecord"> | number
+    barOrders?: JsonNullableFilter<"ClubSessionRecord">
     date?: StringFilter<"ClubSessionRecord"> | string
+    shiftId?: StringNullableFilter<"ClubSessionRecord"> | string | null
     createdAt?: DateTimeFilter<"ClubSessionRecord"> | Date | string
   }
 
@@ -3351,13 +4704,16 @@ export namespace Prisma {
     tableId?: SortOrder
     tableName?: SortOrder
     mode?: SortOrder
+    tariffName?: SortOrderInput | SortOrder
     startTime?: SortOrder
     endTime?: SortOrder
     duration?: SortOrder
     tableCost?: SortOrder
     barCost?: SortOrder
     totalCost?: SortOrder
+    barOrders?: SortOrderInput | SortOrder
     date?: SortOrder
+    shiftId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
   }
 
@@ -3372,13 +4728,16 @@ export namespace Prisma {
     tableId?: IntFilter<"ClubSessionRecord"> | number
     tableName?: StringFilter<"ClubSessionRecord"> | string
     mode?: StringFilter<"ClubSessionRecord"> | string
+    tariffName?: StringNullableFilter<"ClubSessionRecord"> | string | null
     startTime?: DateTimeFilter<"ClubSessionRecord"> | Date | string
     endTime?: DateTimeFilter<"ClubSessionRecord"> | Date | string
     duration?: IntFilter<"ClubSessionRecord"> | number
     tableCost?: IntFilter<"ClubSessionRecord"> | number
     barCost?: IntFilter<"ClubSessionRecord"> | number
     totalCost?: IntFilter<"ClubSessionRecord"> | number
+    barOrders?: JsonNullableFilter<"ClubSessionRecord">
     date?: StringFilter<"ClubSessionRecord"> | string
+    shiftId?: StringNullableFilter<"ClubSessionRecord"> | string | null
     createdAt?: DateTimeFilter<"ClubSessionRecord"> | Date | string
   }, "id" | "clubId_externalId">
 
@@ -3389,13 +4748,16 @@ export namespace Prisma {
     tableId?: SortOrder
     tableName?: SortOrder
     mode?: SortOrder
+    tariffName?: SortOrderInput | SortOrder
     startTime?: SortOrder
     endTime?: SortOrder
     duration?: SortOrder
     tableCost?: SortOrder
     barCost?: SortOrder
     totalCost?: SortOrder
+    barOrders?: SortOrderInput | SortOrder
     date?: SortOrder
+    shiftId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: ClubSessionRecordCountOrderByAggregateInput
     _avg?: ClubSessionRecordAvgOrderByAggregateInput
@@ -3414,14 +4776,117 @@ export namespace Prisma {
     tableId?: IntWithAggregatesFilter<"ClubSessionRecord"> | number
     tableName?: StringWithAggregatesFilter<"ClubSessionRecord"> | string
     mode?: StringWithAggregatesFilter<"ClubSessionRecord"> | string
+    tariffName?: StringNullableWithAggregatesFilter<"ClubSessionRecord"> | string | null
     startTime?: DateTimeWithAggregatesFilter<"ClubSessionRecord"> | Date | string
     endTime?: DateTimeWithAggregatesFilter<"ClubSessionRecord"> | Date | string
     duration?: IntWithAggregatesFilter<"ClubSessionRecord"> | number
     tableCost?: IntWithAggregatesFilter<"ClubSessionRecord"> | number
     barCost?: IntWithAggregatesFilter<"ClubSessionRecord"> | number
     totalCost?: IntWithAggregatesFilter<"ClubSessionRecord"> | number
+    barOrders?: JsonNullableWithAggregatesFilter<"ClubSessionRecord">
     date?: StringWithAggregatesFilter<"ClubSessionRecord"> | string
+    shiftId?: StringNullableWithAggregatesFilter<"ClubSessionRecord"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ClubSessionRecord"> | Date | string
+  }
+
+  export type ClubShiftRecordWhereInput = {
+    AND?: ClubShiftRecordWhereInput | ClubShiftRecordWhereInput[]
+    OR?: ClubShiftRecordWhereInput[]
+    NOT?: ClubShiftRecordWhereInput | ClubShiftRecordWhereInput[]
+    id?: StringFilter<"ClubShiftRecord"> | string
+    clubId?: StringFilter<"ClubShiftRecord"> | string
+    externalId?: StringFilter<"ClubShiftRecord"> | string
+    operatorId?: StringFilter<"ClubShiftRecord"> | string
+    operatorName?: StringFilter<"ClubShiftRecord"> | string
+    startTime?: DateTimeFilter<"ClubShiftRecord"> | Date | string
+    endTime?: DateTimeNullableFilter<"ClubShiftRecord"> | Date | string | null
+    isActive?: BoolFilter<"ClubShiftRecord"> | boolean
+    totalRevenue?: IntFilter<"ClubShiftRecord"> | number
+    tableRevenue?: IntFilter<"ClubShiftRecord"> | number
+    barRevenue?: IntFilter<"ClubShiftRecord"> | number
+    sessionsCount?: IntFilter<"ClubShiftRecord"> | number
+    createdAt?: DateTimeFilter<"ClubShiftRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"ClubShiftRecord"> | Date | string
+  }
+
+  export type ClubShiftRecordOrderByWithRelationInput = {
+    id?: SortOrder
+    clubId?: SortOrder
+    externalId?: SortOrder
+    operatorId?: SortOrder
+    operatorName?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    totalRevenue?: SortOrder
+    tableRevenue?: SortOrder
+    barRevenue?: SortOrder
+    sessionsCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ClubShiftRecordWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    clubId_externalId?: ClubShiftRecordClubIdExternalIdCompoundUniqueInput
+    AND?: ClubShiftRecordWhereInput | ClubShiftRecordWhereInput[]
+    OR?: ClubShiftRecordWhereInput[]
+    NOT?: ClubShiftRecordWhereInput | ClubShiftRecordWhereInput[]
+    clubId?: StringFilter<"ClubShiftRecord"> | string
+    externalId?: StringFilter<"ClubShiftRecord"> | string
+    operatorId?: StringFilter<"ClubShiftRecord"> | string
+    operatorName?: StringFilter<"ClubShiftRecord"> | string
+    startTime?: DateTimeFilter<"ClubShiftRecord"> | Date | string
+    endTime?: DateTimeNullableFilter<"ClubShiftRecord"> | Date | string | null
+    isActive?: BoolFilter<"ClubShiftRecord"> | boolean
+    totalRevenue?: IntFilter<"ClubShiftRecord"> | number
+    tableRevenue?: IntFilter<"ClubShiftRecord"> | number
+    barRevenue?: IntFilter<"ClubShiftRecord"> | number
+    sessionsCount?: IntFilter<"ClubShiftRecord"> | number
+    createdAt?: DateTimeFilter<"ClubShiftRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"ClubShiftRecord"> | Date | string
+  }, "id" | "clubId_externalId">
+
+  export type ClubShiftRecordOrderByWithAggregationInput = {
+    id?: SortOrder
+    clubId?: SortOrder
+    externalId?: SortOrder
+    operatorId?: SortOrder
+    operatorName?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    totalRevenue?: SortOrder
+    tableRevenue?: SortOrder
+    barRevenue?: SortOrder
+    sessionsCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ClubShiftRecordCountOrderByAggregateInput
+    _avg?: ClubShiftRecordAvgOrderByAggregateInput
+    _max?: ClubShiftRecordMaxOrderByAggregateInput
+    _min?: ClubShiftRecordMinOrderByAggregateInput
+    _sum?: ClubShiftRecordSumOrderByAggregateInput
+  }
+
+  export type ClubShiftRecordScalarWhereWithAggregatesInput = {
+    AND?: ClubShiftRecordScalarWhereWithAggregatesInput | ClubShiftRecordScalarWhereWithAggregatesInput[]
+    OR?: ClubShiftRecordScalarWhereWithAggregatesInput[]
+    NOT?: ClubShiftRecordScalarWhereWithAggregatesInput | ClubShiftRecordScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ClubShiftRecord"> | string
+    clubId?: StringWithAggregatesFilter<"ClubShiftRecord"> | string
+    externalId?: StringWithAggregatesFilter<"ClubShiftRecord"> | string
+    operatorId?: StringWithAggregatesFilter<"ClubShiftRecord"> | string
+    operatorName?: StringWithAggregatesFilter<"ClubShiftRecord"> | string
+    startTime?: DateTimeWithAggregatesFilter<"ClubShiftRecord"> | Date | string
+    endTime?: DateTimeNullableWithAggregatesFilter<"ClubShiftRecord"> | Date | string | null
+    isActive?: BoolWithAggregatesFilter<"ClubShiftRecord"> | boolean
+    totalRevenue?: IntWithAggregatesFilter<"ClubShiftRecord"> | number
+    tableRevenue?: IntWithAggregatesFilter<"ClubShiftRecord"> | number
+    barRevenue?: IntWithAggregatesFilter<"ClubShiftRecord"> | number
+    sessionsCount?: IntWithAggregatesFilter<"ClubShiftRecord"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"ClubShiftRecord"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ClubShiftRecord"> | Date | string
   }
 
   export type ClubSyncSnapshotCreateInput = {
@@ -3487,13 +4952,16 @@ export namespace Prisma {
     tableId: number
     tableName: string
     mode: string
+    tariffName?: string | null
     startTime: Date | string
     endTime: Date | string
     duration: number
     tableCost: number
     barCost: number
     totalCost: number
+    barOrders?: NullableJsonNullValueInput | InputJsonValue
     date: string
+    shiftId?: string | null
     createdAt?: Date | string
   }
 
@@ -3504,13 +4972,16 @@ export namespace Prisma {
     tableId: number
     tableName: string
     mode: string
+    tariffName?: string | null
     startTime: Date | string
     endTime: Date | string
     duration: number
     tableCost: number
     barCost: number
     totalCost: number
+    barOrders?: NullableJsonNullValueInput | InputJsonValue
     date: string
+    shiftId?: string | null
     createdAt?: Date | string
   }
 
@@ -3521,13 +4992,16 @@ export namespace Prisma {
     tableId?: IntFieldUpdateOperationsInput | number
     tableName?: StringFieldUpdateOperationsInput | string
     mode?: StringFieldUpdateOperationsInput | string
+    tariffName?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     tableCost?: IntFieldUpdateOperationsInput | number
     barCost?: IntFieldUpdateOperationsInput | number
     totalCost?: IntFieldUpdateOperationsInput | number
+    barOrders?: NullableJsonNullValueInput | InputJsonValue
     date?: StringFieldUpdateOperationsInput | string
+    shiftId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -3538,13 +5012,16 @@ export namespace Prisma {
     tableId?: IntFieldUpdateOperationsInput | number
     tableName?: StringFieldUpdateOperationsInput | string
     mode?: StringFieldUpdateOperationsInput | string
+    tariffName?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     tableCost?: IntFieldUpdateOperationsInput | number
     barCost?: IntFieldUpdateOperationsInput | number
     totalCost?: IntFieldUpdateOperationsInput | number
+    barOrders?: NullableJsonNullValueInput | InputJsonValue
     date?: StringFieldUpdateOperationsInput | string
+    shiftId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -3555,13 +5032,16 @@ export namespace Prisma {
     tableId: number
     tableName: string
     mode: string
+    tariffName?: string | null
     startTime: Date | string
     endTime: Date | string
     duration: number
     tableCost: number
     barCost: number
     totalCost: number
+    barOrders?: NullableJsonNullValueInput | InputJsonValue
     date: string
+    shiftId?: string | null
     createdAt?: Date | string
   }
 
@@ -3572,13 +5052,16 @@ export namespace Prisma {
     tableId?: IntFieldUpdateOperationsInput | number
     tableName?: StringFieldUpdateOperationsInput | string
     mode?: StringFieldUpdateOperationsInput | string
+    tariffName?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     tableCost?: IntFieldUpdateOperationsInput | number
     barCost?: IntFieldUpdateOperationsInput | number
     totalCost?: IntFieldUpdateOperationsInput | number
+    barOrders?: NullableJsonNullValueInput | InputJsonValue
     date?: StringFieldUpdateOperationsInput | string
+    shiftId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -3589,14 +5072,136 @@ export namespace Prisma {
     tableId?: IntFieldUpdateOperationsInput | number
     tableName?: StringFieldUpdateOperationsInput | string
     mode?: StringFieldUpdateOperationsInput | string
+    tariffName?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     tableCost?: IntFieldUpdateOperationsInput | number
     barCost?: IntFieldUpdateOperationsInput | number
     totalCost?: IntFieldUpdateOperationsInput | number
+    barOrders?: NullableJsonNullValueInput | InputJsonValue
     date?: StringFieldUpdateOperationsInput | string
+    shiftId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClubShiftRecordCreateInput = {
+    id?: string
+    clubId: string
+    externalId: string
+    operatorId: string
+    operatorName: string
+    startTime: Date | string
+    endTime?: Date | string | null
+    isActive?: boolean
+    totalRevenue?: number
+    tableRevenue?: number
+    barRevenue?: number
+    sessionsCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ClubShiftRecordUncheckedCreateInput = {
+    id?: string
+    clubId: string
+    externalId: string
+    operatorId: string
+    operatorName: string
+    startTime: Date | string
+    endTime?: Date | string | null
+    isActive?: boolean
+    totalRevenue?: number
+    tableRevenue?: number
+    barRevenue?: number
+    sessionsCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ClubShiftRecordUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    clubId?: StringFieldUpdateOperationsInput | string
+    externalId?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    operatorName?: StringFieldUpdateOperationsInput | string
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    totalRevenue?: IntFieldUpdateOperationsInput | number
+    tableRevenue?: IntFieldUpdateOperationsInput | number
+    barRevenue?: IntFieldUpdateOperationsInput | number
+    sessionsCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClubShiftRecordUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    clubId?: StringFieldUpdateOperationsInput | string
+    externalId?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    operatorName?: StringFieldUpdateOperationsInput | string
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    totalRevenue?: IntFieldUpdateOperationsInput | number
+    tableRevenue?: IntFieldUpdateOperationsInput | number
+    barRevenue?: IntFieldUpdateOperationsInput | number
+    sessionsCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClubShiftRecordCreateManyInput = {
+    id?: string
+    clubId: string
+    externalId: string
+    operatorId: string
+    operatorName: string
+    startTime: Date | string
+    endTime?: Date | string | null
+    isActive?: boolean
+    totalRevenue?: number
+    tableRevenue?: number
+    barRevenue?: number
+    sessionsCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ClubShiftRecordUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    clubId?: StringFieldUpdateOperationsInput | string
+    externalId?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    operatorName?: StringFieldUpdateOperationsInput | string
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    totalRevenue?: IntFieldUpdateOperationsInput | number
+    tableRevenue?: IntFieldUpdateOperationsInput | number
+    barRevenue?: IntFieldUpdateOperationsInput | number
+    sessionsCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ClubShiftRecordUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    clubId?: StringFieldUpdateOperationsInput | string
+    externalId?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    operatorName?: StringFieldUpdateOperationsInput | string
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    totalRevenue?: IntFieldUpdateOperationsInput | number
+    tableRevenue?: IntFieldUpdateOperationsInput | number
+    barRevenue?: IntFieldUpdateOperationsInput | number
+    sessionsCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -3737,6 +5342,49 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
+  }
+
   export type ClubSessionRecordClubIdExternalIdCompoundUniqueInput = {
     clubId: string
     externalId: string
@@ -3749,13 +5397,16 @@ export namespace Prisma {
     tableId?: SortOrder
     tableName?: SortOrder
     mode?: SortOrder
+    tariffName?: SortOrder
     startTime?: SortOrder
     endTime?: SortOrder
     duration?: SortOrder
     tableCost?: SortOrder
     barCost?: SortOrder
     totalCost?: SortOrder
+    barOrders?: SortOrder
     date?: SortOrder
+    shiftId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -3774,6 +5425,7 @@ export namespace Prisma {
     tableId?: SortOrder
     tableName?: SortOrder
     mode?: SortOrder
+    tariffName?: SortOrder
     startTime?: SortOrder
     endTime?: SortOrder
     duration?: SortOrder
@@ -3781,6 +5433,7 @@ export namespace Prisma {
     barCost?: SortOrder
     totalCost?: SortOrder
     date?: SortOrder
+    shiftId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -3791,6 +5444,7 @@ export namespace Prisma {
     tableId?: SortOrder
     tableName?: SortOrder
     mode?: SortOrder
+    tariffName?: SortOrder
     startTime?: SortOrder
     endTime?: SortOrder
     duration?: SortOrder
@@ -3798,6 +5452,7 @@ export namespace Prisma {
     barCost?: SortOrder
     totalCost?: SortOrder
     date?: SortOrder
+    shiftId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -3825,6 +5480,158 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type ClubShiftRecordClubIdExternalIdCompoundUniqueInput = {
+    clubId: string
+    externalId: string
+  }
+
+  export type ClubShiftRecordCountOrderByAggregateInput = {
+    id?: SortOrder
+    clubId?: SortOrder
+    externalId?: SortOrder
+    operatorId?: SortOrder
+    operatorName?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isActive?: SortOrder
+    totalRevenue?: SortOrder
+    tableRevenue?: SortOrder
+    barRevenue?: SortOrder
+    sessionsCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ClubShiftRecordAvgOrderByAggregateInput = {
+    totalRevenue?: SortOrder
+    tableRevenue?: SortOrder
+    barRevenue?: SortOrder
+    sessionsCount?: SortOrder
+  }
+
+  export type ClubShiftRecordMaxOrderByAggregateInput = {
+    id?: SortOrder
+    clubId?: SortOrder
+    externalId?: SortOrder
+    operatorId?: SortOrder
+    operatorName?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isActive?: SortOrder
+    totalRevenue?: SortOrder
+    tableRevenue?: SortOrder
+    barRevenue?: SortOrder
+    sessionsCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ClubShiftRecordMinOrderByAggregateInput = {
+    id?: SortOrder
+    clubId?: SortOrder
+    externalId?: SortOrder
+    operatorId?: SortOrder
+    operatorName?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isActive?: SortOrder
+    totalRevenue?: SortOrder
+    tableRevenue?: SortOrder
+    barRevenue?: SortOrder
+    sessionsCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ClubShiftRecordSumOrderByAggregateInput = {
+    totalRevenue?: SortOrder
+    tableRevenue?: SortOrder
+    barRevenue?: SortOrder
+    sessionsCount?: SortOrder
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -3839,6 +5646,18 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -3931,6 +5750,20 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -3956,6 +5789,95 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
 

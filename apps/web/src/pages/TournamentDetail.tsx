@@ -1034,7 +1034,7 @@ function AddParticipantModal({
           <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5">
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-emerald-500/20">
               {found.avatar ? (
-                <img src={found.avatar} alt={found.name} className="h-full w-full object-cover" />
+                <img src={found.avatar} alt={found.name} loading="lazy" decoding="async" width="40" height="40" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-sm font-bold text-emerald-300">
                   {found.name.slice(0, 1).toUpperCase()}
@@ -1086,7 +1086,7 @@ function AddParticipantModal({
                 className="ring-focus group relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-dashed border-[var(--line-strong)] bg-[var(--surface-input)] transition hover:border-emerald-400/60"
               >
                 {uploadedAvatar ? (
-                  <img src={uploadedAvatar} alt="Фото участника" className="h-full w-full object-cover" />
+                  <img src={uploadedAvatar} alt="Фото участника" decoding="async" className="h-full w-full object-cover" />
                 ) : uploading ? (
                   <Loader2 size={18} className="mx-auto animate-spin text-text-muted" />
                 ) : (

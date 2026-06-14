@@ -3,12 +3,14 @@ import {
   clubAuthInputSchema,
   clubSyncInputSchema,
   clubSessionInputSchema,
+  clubShiftInputSchema,
   type ClubAuthResponse,
   type ClubStatusSnapshot,
   type ClubSessionsResponse,
   type ClubSessionsSummaryRow,
   type ClubRevenue,
   type TableSnapshot,
+  type ClubShiftsResponse,
 } from '@billiard/shared'
 import type { Prisma } from './_prisma/index.js'
 import { prisma } from './db.js'
@@ -135,12 +137,15 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
           tableId: s.tableId,
           tableName: s.tableName,
           mode: s.mode,
+          tariffName: s.tariffName ?? null,
           startTime: new Date(s.startTime),
           endTime: new Date(s.endTime),
           duration: s.duration,
           tableCost: s.tableCost,
           barCost: s.barCost,
           totalCost: s.totalCost,
+          barOrders: s.barOrders ? (s.barOrders as unknown as Prisma.InputJsonValue) : undefined,
+          shiftId: s.shiftId ?? null,
           date: s.date,
         },
       })
@@ -153,6 +158,77 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
       }
       throw err
     }
+  })
+
+  // ---- POST /club/shift ----
+  // Desktop пушит смену: открыл/закрыл/обновил итоги. Идемпотентно по {clubId, externalId}.
+  app.post('/club/shift', async (req, reply) => {
+    const client = await desktopOrReject(req, reply)
+    if (!('clubId' in client)) return
+
+    const parsed = clubShiftInputSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return reply.code(400).send({ code: 'VALIDATION_ERROR', details: parsed.error.flatten() })
+    }
+    const s = parsed.data
+    const isActive = s.endTime === null
+
+    await prisma.clubShiftRecord.upsert({
+      where: { clubId_externalId: { clubId: client.clubId, externalId: s.id } },
+      create: {
+        clubId: client.clubId,
+        externalId: s.id,
+        operatorId: s.operatorId,
+        operatorName: s.operatorName,
+        startTime: new Date(s.startTime),
+        endTime: s.endTime ? new Date(s.endTime) : null,
+        isActive,
+        totalRevenue: s.totalRevenue,
+        tableRevenue: s.tableRevenue,
+        barRevenue: s.barRevenue,
+        sessionsCount: s.sessionsCount,
+      },
+      update: {
+        operatorName: s.operatorName,
+        endTime: s.endTime ? new Date(s.endTime) : null,
+        isActive,
+        totalRevenue: s.totalRevenue,
+        tableRevenue: s.tableRevenue,
+        barRevenue: s.barRevenue,
+        sessionsCount: s.sessionsCount,
+      },
+    })
+    return reply.code(200).send({ ok: true })
+  })
+
+  // ---- GET /club/shifts ----
+  // Browser-отчёты: список смен (последние 50).
+  app.get('/club/shifts', async (req, reply) => {
+    const user = await browserOrReject(req, reply)
+    if (!('id' in user)) return
+
+    const items = await prisma.clubShiftRecord.findMany({
+      where: { clubId: user.id },
+      orderBy: { startTime: 'desc' },
+      take: 50,
+    })
+
+    const response: ClubShiftsResponse = {
+      shifts: items.map((s) => ({
+        id: s.id,
+        externalId: s.externalId,
+        operatorId: s.operatorId,
+        operatorName: s.operatorName,
+        startTime: s.startTime.toISOString(),
+        endTime: s.endTime?.toISOString() ?? null,
+        isActive: s.isActive,
+        totalRevenue: s.totalRevenue,
+        tableRevenue: s.tableRevenue,
+        barRevenue: s.barRevenue,
+        sessionsCount: s.sessionsCount,
+      })),
+    }
+    return reply.send(response)
   })
 
   // ---- GET /club/status ----
@@ -181,12 +257,12 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   // ---- GET /club/sessions ----
   // Browser-отчёты: список сессий с фильтрами.
   app.get<{
-    Querystring: { date?: string; from?: string; to?: string; tableId?: string }
+    Querystring: { date?: string; from?: string; to?: string; tableId?: string; shiftId?: string }
   }>('/club/sessions', async (req, reply) => {
     const user = await browserOrReject(req, reply)
     if (!('id' in user)) return
 
-    const { date, from, to, tableId } = req.query
+    const { date, from, to, tableId, shiftId } = req.query
 
     const where: Prisma.ClubSessionRecordWhereInput = { clubId: user.id }
     if (date) {
@@ -211,6 +287,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
       if (!Number.isInteger(id)) return reply.code(400).send({ code: 'BAD_TABLE_ID' })
       where.tableId = id
     }
+    if (shiftId) where.shiftId = shiftId
 
     const items = await prisma.clubSessionRecord.findMany({
       where,
@@ -234,13 +311,16 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
         tableId: s.tableId,
         tableName: s.tableName,
         mode: s.mode as 'time' | 'amount' | 'unlimited',
+        tariffName: s.tariffName ?? null,
         startTime: s.startTime.toISOString(),
         endTime: s.endTime.toISOString(),
         duration: s.duration,
         tableCost: s.tableCost,
         barCost: s.barCost,
         totalCost: s.totalCost,
+        barOrders: (s.barOrders as unknown as ClubSessionsResponse['sessions'][number]['barOrders']) ?? undefined,
         date: s.date,
+        shiftId: s.shiftId ?? null,
       })),
       totals,
     }

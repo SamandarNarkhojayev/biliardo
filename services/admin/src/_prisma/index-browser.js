@@ -155,6 +155,15 @@ exports.Prisma.AlertLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.IpBanScalarFieldEnum = {
+  id: 'id',
+  ip: 'ip',
+  reason: 'reason',
+  until: 'until',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -185,7 +194,8 @@ exports.Prisma.JsonNullValueFilter = {
 exports.Prisma.ModelName = {
   ActivityLog: 'ActivityLog',
   ServiceHealthSample: 'ServiceHealthSample',
-  AlertLog: 'AlertLog'
+  AlertLog: 'AlertLog',
+  IpBan: 'IpBan'
 };
 
 /**

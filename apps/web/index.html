@@ -43,17 +43,22 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Biliardo — автоматизация бильярдного клуба" />
 
-    <!-- Mobile -->
+    <!-- Mobile (standalone). apple-mobile-web-app-capable считается deprecated, но
+         iOS Safari всё ещё уважает его на iOS 14+. Современный аналог — mobile-web-app-capable. -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Biliardo" />
     <meta name="format-detection" content="telephone=yes" />
 
-    <!-- Fonts: preconnect + неблокирующая загрузка через display=swap.
-         Берём только реально используемые веса (400/600/700/900) — экономия ~30KB. -->
+    <!-- Fonts: preconnect + НЕблокирующая загрузка через preload+onload.
+         Берём только реально используемые веса (400/600/700) — 900 не используется (max — font-extrabold/800).
+         media="print" → загрузка асинхронная (не блокирует first paint), onload переключает в 'all'. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" /></noscript>
 
     <!-- Structured data: Organization -->
     <script type="application/ld+json">

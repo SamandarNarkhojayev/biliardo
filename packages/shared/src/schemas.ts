@@ -65,6 +65,19 @@ const tableSessionSchema = z.object({
   startTime: z.number().int().positive(),
   mode: sessionModeSchema,
   plannedDuration: z.number().int().positive().nullable(),
+  /** Название тарифа (если сессия запущена по тарифу) — для отображения в UI. */
+  tariffName: z.string().max(80).nullable().optional(),
+  /** Текущая стоимость стола на момент sync, тенге. Считается desktop'ом. */
+  currentTableCost: z.number().int().min(0).optional(),
+  /** Текущая стоимость бар-заказов сессии, тенге. */
+  currentBarCost: z.number().int().min(0).optional(),
+})
+
+const reservationSchema = z.object({
+  customerName: z.string().max(120).nullable().optional(),
+  customerPhone: z.string().max(40).nullable().optional(),
+  reservedFor: z.number().int().positive().optional(),
+  notes: z.string().max(500).nullable().optional(),
 })
 
 const tableSnapshotSchema = z.object({
@@ -73,6 +86,10 @@ const tableSnapshotSchema = z.object({
   status: tableStatusSchema,
   lightOn: z.boolean(),
   session: tableSessionSchema.nullable(),
+  /** Действующая ставка ₸/час — для отображения и fallback-расчёта в web. */
+  pricePerHour: z.number().int().min(0).optional(),
+  /** Бронь, если status='reserved'. */
+  reservation: reservationSchema.nullable().optional(),
 })
 
 export const clubSyncInputSchema = z.object({
@@ -86,12 +103,20 @@ export const clubSyncInputSchema = z.object({
 })
 export type ClubSyncInput = z.infer<typeof clubSyncInputSchema>
 
+const barOrderItemSchema = z.object({
+  menuItemName: z.string().max(120),
+  quantity: z.number().int().min(1),
+  price: z.number().int().min(0),
+})
+
 export const clubSessionInputSchema = z.object({
   /** Внешний id из desktop — для idempotency (повторные отправки не дублируются). */
   id: z.string().min(1).max(120),
   tableId: z.number().int(),
   tableName: z.string().max(80),
   mode: sessionModeSchema,
+  /** Название тарифа (если запущен по тарифу) — опционально. */
+  tariffName: z.string().max(80).nullable().optional(),
   /** Unix ms */
   startTime: z.number().int().positive(),
   endTime: z.number().int().positive(),
@@ -102,8 +127,31 @@ export const clubSessionInputSchema = z.object({
   totalCost: z.number().int().min(0),
   /** YYYY-MM-DD */
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  /** Опциональный список бар-позиций — для детализации в web-отчётах. */
+  barOrders: z.array(barOrderItemSchema).max(50).optional(),
+  /** Опциональный externalId смены, в которой завершена сессия. */
+  shiftId: z.string().max(120).nullable().optional(),
 })
 export type ClubSessionInput = z.infer<typeof clubSessionInputSchema>
+
+// ----- Shifts -----
+
+export const clubShiftInputSchema = z.object({
+  /** Внешний id смены из desktop'а (идемпотентность). */
+  id: z.string().min(1).max(120),
+  operatorId: z.string().min(1).max(120),
+  operatorName: z.string().min(1).max(120),
+  /** Unix ms */
+  startTime: z.number().int().positive(),
+  /** Unix ms или null если смена ещё открыта. */
+  endTime: z.number().int().positive().nullable(),
+  /** Итоги по смене — посчитаны на десктопе. */
+  totalRevenue: z.number().int().min(0),
+  tableRevenue: z.number().int().min(0),
+  barRevenue: z.number().int().min(0),
+  sessionsCount: z.number().int().min(0),
+})
+export type ClubShiftInput = z.infer<typeof clubShiftInputSchema>
 
 // ----- Tournament (для будущего tournament-сервиса) -----
 
