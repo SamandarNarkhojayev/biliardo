@@ -208,21 +208,28 @@ export function Navbar() {
             )}
           </div>
 
+          {/* CLUB Dashboard CTA — видна на ВСЕХ размерах экрана, не только lg+.
+             Это главный CTA для владельца клуба: попасть в /club/dashboard сразу
+             после логина без копаний по меню. */}
+          {user?.accountType === 'CLUB' && !location.pathname.startsWith('/club/dashboard') && (
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<LayoutDashboard size={16} />}
+              onClick={() => { setOpen(false); navigate('/club/dashboard/tables') }}
+              className="shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/40"
+            >
+              <span className="hidden sm:inline">Дашборд клуба</span>
+              <span className="sm:hidden">Дашборд</span>
+            </Button>
+          )}
+
           {/* Right: locale, theme, auth */}
           <div className="hidden items-center gap-2 lg:flex">
             <LocaleToggle />
             <ThemeToggle />
             {user ? (
               <>
-                {user.accountType === 'CLUB' && !location.pathname.startsWith('/club/dashboard') && (
-                  <Button
-                    variant="primary" size="sm"
-                    leftIcon={<LayoutDashboard size={16} />}
-                    onClick={() => navigate('/club/dashboard/tables')}
-                  >
-                    Дашборд клуба
-                  </Button>
-                )}
                 {!inWorkspace && user.accountType !== 'CLUB' && (
                   <Button
                     variant="primary" size="sm"
